@@ -6,7 +6,8 @@ var http = require('request'),
 var log = false;
 
 function identity(x) { return x; }
-function bool(s) { return s && s.toLowerCase() == 'true'; }
+
+function bool(s) { return typeof s == "string" ? s.toLowerCase() == 'true' : !!s; }
 
 function format(f) {
 	var args = [].slice.call(arguments, 1);
@@ -158,6 +159,25 @@ module.exports = function(options) {
 				};
 			});
 		}
+		
+		function convertPeople(d) {
+			return d.people[0].person.map(function(p) {
+				return {
+					id: p.ixPerson[0],
+					name: p.sFullName[0],
+					email: p.sEmail[0],
+					admin: bool(p.fAdministrator),
+					community: bool(p.fCommunity),
+					virtual: bool(p.fVirtual),
+					deleted: bool(p.fDeleted),
+					notify: bool(p.fNotify),
+					homepage: p.sHomepage[0],
+					locale: p.sLocale[0],
+					language: p.sLanguage[0],
+					workingOn: p.ixBugWorkingOn[0]
+				};
+			});
+		}
 
 		return {
 			logout: function() { return simpleCmd("logoff"); },
@@ -165,6 +185,7 @@ module.exports = function(options) {
 			// lists
 			filters: list("Filters", convertFilters),
 			projects: list("Projects", convertProjects),
+			people: list("People", convertPeople),
 			areas: list("Areas", convertAreas),
 			categories: list("Categories", convertCategories),
 			priorities: list("Priorities", convertPriorities),
