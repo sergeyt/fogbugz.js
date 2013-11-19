@@ -123,7 +123,22 @@ module.exports = function(options) {
 		}
 		
 		function convertAreas(d) {
-			return d;
+			return d.areas[0].area.map(function(a) {
+				return {
+					id: a.ixArea[0],
+					name: a.sArea[0],
+					project: {
+						id: a.ixProject[0],
+						name: a.sProject[0]
+					},
+					owner: {
+						id: a.ixPersonOwner[0],
+						name: a.sPersonOwner[0]
+					},
+					type: a.nType[0],
+					doc: a.cDoc[0]
+				};
+			});
 		}
 		
 		function convertCategories(d) {
