@@ -3,31 +3,44 @@ var http = require('request'),
     xml2js = require('xml2js'),
     Q = require('q');
 
+var log = false;
+
 function identity(x) { return x; }
+function bool(s) { return s && s.toLowerCase() == 'true'; }
 
 function format(f) {
-	var args = [].slice(arguments, 1);
+	var args = [].slice.call(arguments, 1);
 	return f.replace(/{(\d+)}/g, function(match, i) {
 		return typeof args[i] != 'undefined' ? args[i] : "";
 	});
 }
 
 function get() {
-	var url = format.apply([].slice(arguments));
-	var d = Q.deffer();
+	var url = format.apply(null, [].slice.call(arguments));
+	log && console.log("GET %s", url);
+	
+	var def = Q.defer();
+	
 	http.get(url, function(err, res, body) {
 		if (err) {
-			d.reject(err);
+			def.reject(err);
 		} else {
-			xml2js.parseString(body, function(error, result) {
+			log && console.log(body);
+			xml2js.parseString(body, function(error, d) {
 				if (error) {
-					d.reject(error);
+					def.reject(error);
+				} else if (!d.response) {
+					def.reject("unexpected response!");
+				} else if (d.response.error) {
+					def.reject(d.response.error[0]._);
 				} else {
-					d.resolve(result);
+					def.resolve(d.response);
 				}
 			});
 		}
 	});
+
+	return def.promise;
 }
 
 // creates new client with specified options
@@ -82,17 +95,70 @@ module.exports = function(options) {
 		}
 		
 		function convertFilters(d) {
-			return d;
+			return d.filters[0].filter.map(function(f) {
+				return {
+					name: f._,
+					type: f.$.type,
+				};
+			});
+		}
+		
+		function convertProjects(d) {
+			return d.projects[0].project.map(function(p) {
+				return {
+					id: p.ixProject[0],
+					name: p.sProject[0],
+					owner: {
+						id: p.ixPersonOwner[0],
+						name: p.sPersonOwner[0]
+					},
+					email: p.sEmail[0],
+					phone: p.sPhone[0],
+					workflowId: p.ixWorkflow[0],
+					deleted: bool(p.fDeleted[0]),
+					inbox: bool(p.fInbox[0])
+				};
+			});
 		}
 		
 		function convertAreas(d) {
 			return d;
 		}
 		
-		function convertProjects(d) {
-			return d;
+		function convertCategories(d) {
+			return d.categories[0].category.map(function(c) {
+				return {
+					id: c.ixCategory[0],
+					name: c.sCategory[0],
+					plural: c.sPlural[0]
+				};
+			});
 		}
 		
+		function convertPriorities(d) {
+			return d.priorities[0].priority.map(function(p) {
+				return {
+					id: p.ixPriority[0],
+					name: p.sPriority[0],
+					isDefault: bool(p.fDefault[0])
+				};
+			});
+		}
+
+		function convertMilestones(d) {
+			return d.fixfors[0].fixfor.map(function(m) {
+				return {
+					id: m.ixFixFor[0],
+					name: m.sFixFor[0],
+					deleted: bool(m.fDeleted[0]),
+					project: {
+						id: m.ixProject[0],
+						name: m.sProject[0]
+					}
+				};
+			});
+		}
+
 		return {
 			logout: function() { return simpleCmd("logoff"); },
 			
@@ -100,9 +166,9 @@ module.exports = function(options) {
 			filters: list("Filters", convertFilters),
 			projects: list("Projects", convertProjects),
 			areas: list("Areas", convertAreas),
-			categories: list("Categories"),
-			priorities: list("Priorities"),
-			milestones: list("FixFors"),
+			categories: list("Categories", convertCategories),
+			priorities: list("Priorities", convertPriorities),
+			milestones: list("FixFors", convertMilestones),
 			mailboxes: list("Mailboxes"),
 			wikis: list("Wikis"),
 			templates: list("Templates"), // wiki templates
@@ -129,7 +195,7 @@ module.exports = function(options) {
 	}
 
 	return get("{0}cmd=logon&email={1}&password={2}", apiUrl, options.email, options.password).then(function(d) {
-		return client(d.response.token);
+		return client(d.token);
 	});
 };
 
