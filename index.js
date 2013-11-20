@@ -1,13 +1,13 @@
 // http://help.fogcreek.com/8202/xml-api
 var http = require('request'),
     xml2js = require('xml2js'),
-    Q = require('q');
+    Q = require('q'),
+    convert = require('./lib/converters'),
+    extend = require('./lib/extenders');
 
 var log = false;
 
 function identity(x) { return x; }
-
-function bool(s) { return typeof s == "string" ? s.toLowerCase() == 'true' : !!s; }
 
 function format(f) {
 	var args = [].slice.call(arguments, 1);
@@ -53,12 +53,6 @@ module.exports = function(options) {
 	if (!options.url || typeof options.url != "string") {
 		throw new Error("Required url option is not specified.");
 	}
-	if (!options.email || typeof options.email != "string") {
-		throw new Error("Required email option is not specified.");
-	}
-	if (!options.password || typeof options.password != "string") {
-		throw new Error("Required password option is not specified.");
-	}
 
 	// normalize url
 	var apiUrl = options.url;
@@ -75,9 +69,14 @@ module.exports = function(options) {
 			return get("{0}cmd={1}", clientUrl, name);
 		}
 
-		function list(name, convert) {
+		function list(name) {
+			var fns = [].slice.call(arguments, 1);
 			return function() {
-				return simpleCmd("list" + name).then(convert || identity);
+				var p = simpleCmd("list" + name);
+				fns.forEach(function(fn) {
+					p = p.then(fn);
+				});
+				return p;
 			};
 		}
 
@@ -94,150 +93,77 @@ module.exports = function(options) {
 			}
 			return get(url);
 		}
-		
-		function convertFilters(d) {
-			return d.filters[0].filter.map(function(f) {
-				return {
-					name: f._,
-					type: f.$.type,
-				};
-			});
-		}
-		
-		function convertProjects(d) {
-			return d.projects[0].project.map(function(p) {
-				return {
-					id: p.ixProject[0],
-					name: p.sProject[0],
-					owner: {
-						id: p.ixPersonOwner[0],
-						name: p.sPersonOwner[0]
-					},
-					email: p.sEmail[0],
-					phone: p.sPhone[0],
-					workflowId: p.ixWorkflow[0],
-					deleted: bool(p.fDeleted[0]),
-					inbox: bool(p.fInbox[0])
-				};
-			});
-		}
-		
-		function convertAreas(d) {
-			return d.areas[0].area.map(function(a) {
-				return {
-					id: a.ixArea[0],
-					name: a.sArea[0],
-					project: {
-						id: a.ixProject[0],
-						name: a.sProject[0]
-					},
-					owner: {
-						id: a.ixPersonOwner[0],
-						name: a.sPersonOwner[0]
-					},
-					type: a.nType[0],
-					doc: a.cDoc[0]
-				};
-			});
-		}
-		
-		function convertCategories(d) {
-			return d.categories[0].category.map(function(c) {
-				return {
-					id: c.ixCategory[0],
-					name: c.sCategory[0],
-					plural: c.sPlural[0]
-				};
-			});
-		}
-		
-		function convertPriorities(d) {
-			return d.priorities[0].priority.map(function(p) {
-				return {
-					id: p.ixPriority[0],
-					name: p.sPriority[0],
-					isDefault: bool(p.fDefault[0])
-				};
-			});
+
+		function search(q, max) {
+			return cmd("search", "q", q, "max", max, "cols", convert.searchCols).then(convert.cases);
 		}
 
-		function convertMilestones(d) {
-			return d.fixfors[0].fixfor.map(function(m) {
-				return {
-					id: m.ixFixFor[0],
-					name: m.sFixFor[0],
-					deleted: bool(m.fDeleted[0]),
-					project: {
-						id: m.ixProject[0],
-						name: m.sProject[0]
-					}
-				};
-			});
+		function create(info) {
+			return cmd("new",
+				"sTitle", info.title,
+				"sProject", info.project.id,
+				"sArea", info.area,
+				"sFixFor", info.milestone,
+				"sCategory", info.category, // TODO map categories
+				"sPersonAssignedTo", info.person,
+				"sPriority", info.priority, // TODO map priority
+				"sTags", info.tags,
+				"sCustomerEmail", info.customerEmail,
+				"sEvent", info.event
+			);
 		}
+
+		var fb = {
+			search: search
+		};
 		
-		function convertPeople(d) {
-			return d.people[0].person.map(function(p) {
-				return {
-					id: p.ixPerson[0],
-					name: p.sFullName[0],
-					email: p.sEmail[0],
-					admin: bool(p.fAdministrator),
-					community: bool(p.fCommunity),
-					virtual: bool(p.fVirtual),
-					deleted: bool(p.fDeleted),
-					notify: bool(p.fNotify),
-					homepage: p.sHomepage[0],
-					locale: p.sLocale[0],
-					language: p.sLanguage[0],
-					workingOn: p.ixBugWorkingOn[0]
-				};
-			});
+		function map(fn) {
+			return function(arr) {
+				return arr.map(fn);
+			};
 		}
 
 		return {
+			token: token,
 			logout: function() { return simpleCmd("logoff"); },
 			
 			// lists
-			filters: list("Filters", convertFilters),
-			projects: list("Projects", convertProjects),
-			people: list("People", convertPeople),
-			areas: list("Areas", convertAreas),
-			categories: list("Categories", convertCategories),
-			priorities: list("Priorities", convertPriorities),
-			milestones: list("FixFors", convertMilestones),
+			filters: list("Filters", convert.filters),
+			projects: list("Projects", convert.projects),
+			people: list("People", convert.people),
+			areas: list("Areas", convert.areas),
+			categories: list("Categories", convert.categories),
+			priorities: list("Priorities", convert.priorities),
+			milestones: list("FixFors", convert.milestones, map(extend.milestone(fb))),
+			// TODO provide converters for below lists
 			mailboxes: list("Mailboxes"),
 			wikis: list("Wikis"),
 			templates: list("Templates"), // wiki templates
 			snippets: list("Snippets"),
 			
 			// list cases
-			search: function(q, max) {
-				return cmd("search", "q", q, "max", max).then(function(d) {
-					return (d.cases[0]["case"] || []).map(function(c) {
-						return {
-							id: c.$.ixBug,
-							operations: c.$.operations
-						};
-					});
-				});
-			},
+			search: search,
 			
 			// editing cases
-			open: function(info) {
-				return cmd("new",
-					"sTitle", info.title,
-					"sProject", info.project.id,
-					"sArea", info.area,
-					"sFixFor", info.milestone,
-					"sCategory", info.category, // TODO map categories
-					"sPersonAssignedTo", info.person,
-					"sPriority", info.priority, // TODO map priority
-					"sTags", info.tags,
-					"sCustomerEmail", info.customerEmail,
-					"sEvent", info.event
-				);
-			}
+			open: create,
+			"new": create,
 		};
+	}
+
+	// creating client with given token
+	if (typeof options.token == "string") {
+		if (!options.token) {
+			throw new Error("token option is empty.");
+		}
+		return client(options.token);
+	}
+
+	// login then create client
+	if (!options.email || typeof options.email != "string") {
+		throw new Error("Required email option is not specified.");
+	}
+	if (!options.password || typeof options.password != "string") {
+		throw new Error("Required password option is not specified.");
 	}
 
 	return get("{0}cmd=logon&email={1}&password={2}", apiUrl, options.email, options.password).then(function(d) {
