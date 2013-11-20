@@ -7,5 +7,6 @@ printAll = (_) -> [].slice.call(arguments, 0).forEach((x) -> console.log(JSON.st
 p = fb({url: 'https://code.datadynamics.com', email: argv.email, password: argv.pwd || argv.password})
 p.fail (err) -> console.log(err)
 
-p.done (client) -> Q.all(client.areas()).done(printAll)
+p.done (client) -> Q.all(client.search('fixfor:sprint 90')).done(printAll)
+#p.done (client) -> Q.all(client.areas()).done(printAll)
 #p.done (client) -> Q.all(client.filters(), client.projects(), client.areas(), client.categories(), client.priorities(), client.milestones()).done(printAll)

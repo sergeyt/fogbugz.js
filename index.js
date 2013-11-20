@@ -89,7 +89,7 @@ module.exports = function(options) {
 				var val = arguments[i++];
 				if (val) {
 					url += "&" + arg;
-					url += "=" + val;
+					url += "=" + encodeURIComponent(val);
 				}
 			}
 			return get(url);
@@ -211,6 +211,16 @@ module.exports = function(options) {
 			snippets: list("Snippets"),
 			
 			// list cases
+			search: function(q, max) {
+				return cmd("search", "q", q, "max", max).then(function(d) {
+					return (d.cases[0]["case"] || []).map(function(c) {
+						return {
+							id: c.$.ixBug,
+							operations: c.$.operations
+						};
+					});
+				});
+			},
 			
 			// editing cases
 			open: function(info) {
