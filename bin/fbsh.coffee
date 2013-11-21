@@ -59,32 +59,43 @@ start = (options, updateConfig, cb) ->
         fb = client
         cb()
 
-# TODO plain print
 ls = (args) ->
     switch args[1]
         when 'm'
-            fb.milestones().then(printJson)
+            fb.milestones().then(printTable)
         when 'f'
-            fb.filters().then(printJson)
+            fb.filters().then(printTable)
         else
-            fb.search().then(printCases)
+            fb.search()
+              # TODO do not hardcode active status
+              .then((list) -> list.filter (x) -> x.status == 1)
+              .then(printCases)
 
 help = () ->
     console.log 'commands:'
-    console.log '  ls        - list cases from current filter'
+    console.log '  ls        - list active cases from current filter'
     console.log '  ls filtes - list available filters'
     done
 
 # utils
+isfn = (x) -> typeof x == 'function'
 toJson = (x) -> JSON.stringify(x, null, 2)
 printJson = (_) -> [].slice.call(arguments, 0).forEach((x) -> console.log(toJson(x)))
+
+printTable = (list) ->
+    if (list.length == 0)
+        return
+    head = Object.keys(list[0]).filter (x) -> !isfn list[0][x]
+    table = new Table({head: head})
+    table.push.apply table, list.map (x) -> head.map (k) -> JSON.stringify x[k]
+    console.log table.toString()
 
 printCases = (list) ->
     table = new Table({
         head: ['#', 'title'],
         colWidths: [8, 100]
     })
-    table.push.apply(table, list.map((x) -> [x.id || 0, x.title || '']))
-    console.log(table.toString())
+    table.push.apply table, list.map (x) -> [x.id || 0, x.title || '']
+    console.log table.toString()
 
 main()
