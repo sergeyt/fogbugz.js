@@ -21,7 +21,8 @@
     "xml2js": "~0.2.8",
     "q": "~0.9.7",
     "extend": "~1.2.1",
-    "isarray": "0.0.1"
+    "isarray": "0.0.1",
+    "ask-for": "0.0.2"
   },
   "devDependencies": {
     "grunt": "~0.4.1",
