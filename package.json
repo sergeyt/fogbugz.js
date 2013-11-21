@@ -22,7 +22,9 @@
     "q": "~0.9.7",
     "extend": "~1.2.1",
     "isarray": "0.0.1",
-    "ask-for": "0.0.2"
+    "askfor": "0.0.2",
+    "read": "~1.0.5",
+    "cli-table": "~0.2.0"
   },
   "devDependencies": {
     "grunt": "~0.4.1",

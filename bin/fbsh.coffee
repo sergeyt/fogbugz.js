@@ -1,62 +1,90 @@
+fs = require('fs')
 fogbugz = require('../index')
-readline = require('readline')
-askFor = require('ask-for')
-Q = require('q')
+read = require('read')
+askfor = require('askfor')
+Table = require('cli-table')
 
-rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-})
-rl.setPrompt 'fbsh'
-
-args = null
-fb = null # instance of fogbugz client
+# instance of fogbugz client
+fb = null
+# promise duck
+done = {done: (cb) -> cb()}
 
 main = () -> auth repl
-
-repl = () ->
-    rl.prompt()
-    rl.on('line', l -> run(l))
+repl = () -> read {prompt: 'fbsh> '}, (err, l) -> run(l).done(repl)
 
 # runs specified line
 run = (l) ->
-    args = l.split(' ')
+    args = l.split(' ').filter((w) -> !!w)
     cmd = args[0]
     switch cmd
         when 'help' then help()
-        when 'ls' then ls()
-        else console.log('unknown command: %s', cmd)
+        when 'ls' then ls(args)
+        when 'q' then process.exit(0)
+        else
+            console.log('unknown command: %s', cmd)
+            done
 
-print = (_) -> [].slice.call(arguments, 0).forEach((x) -> console.log(JSON.stringify(x, null, 2)))
+# CONFIG
+cfgfile = __dirname + '/fbsh.conf.json'
 
 auth = (cb) ->
-    if (fb)
-        cb()
+    if (fs.existsSync(cfgfile))
+        options = require(cfgfile)
+        if (options.token)
+            start options, false, cb
+        else
+            askcfg cb
     else
-        askFor ['fogbugz url', 'user', 'password'], (answers) ->
-            options =
-                url: answers['fogbugz url']
-                user: answers.user,
-                password: answers.password
-            fogbugz(options).done client ->
-                # TODO store config in secure cookie file
-                fb = client
-                cb()
+        askcfg cb
+
+askcfg = (cb) ->
+    askfor ['fogbugz url', 'user', 'password'], (answers) ->
+        options =
+            url: answers['fogbugz url']
+            user: answers.user,
+            password: answers.password
+        start options, true, cb
+
+start = (options, updateConfig, cb) ->
+    p = fogbugz(options)
+    p.fail (error) ->
+        console.log(error)
+        # TODO auth again
+        process.exit(-1)
+    p.done (client) ->
+        if (updateConfig)
+            delete options.password
+            options.token = client.token
+            fs.writeFileSync(cfgfile, toJson(options), 'utf8')
+        fb = client
+        cb()
 
 # TODO plain print
-ls = () ->
+ls = (args) ->
     switch args[1]
-        when 'milestones'
-            fb.milestones().then(print)
+        when 'm'
+            fb.milestones().then(printJson)
+        when 'f'
+            fb.filters().then(printJson)
         else
-            fb.search().then(print)
+            fb.search().then(printCases)
 
 help = () ->
-    console.log 'usage: fbsh <command> [<args>]'
-    console.log ''
     console.log 'commands:'
     console.log '  ls        - list cases from current filter'
     console.log '  ls filtes - list available filters'
-    return Q('')
+    done
+
+# utils
+toJson = (x) -> JSON.stringify(x, null, 2)
+printJson = (_) -> [].slice.call(arguments, 0).forEach((x) -> console.log(toJson(x)))
+
+printCases = (list) ->
+    table = new Table({
+        head: ['#', 'title'],
+        colWidths: [8, 100]
+    })
+    table.push.apply(table, list.map((x) -> [x.id || 0, x.title || '']))
+    console.log(table.toString())
 
 main()

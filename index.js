@@ -3,7 +3,8 @@ var http = require('request'),
     xml2js = require('xml2js'),
     Q = require('q'),
     convert = require('./lib/converters'),
-    extend = require('./lib/extenders');
+    extend = require('./lib/extenders'),
+    isarray = require('isarray');
 
 var log = false;
 
@@ -155,19 +156,21 @@ module.exports = function(options) {
 		if (!options.token) {
 			throw new Error("token option is empty.");
 		}
-		return client(options.token);
+		return Q(client(options.token));
 	}
 
 	// login then create client
-	if (!options.email || typeof options.email != "string") {
+	var user = options.email || options.user;
+	var pwd = options.password || options.pwd;
+	if (!user || typeof user != "string") {
 		throw new Error("Required email option is not specified.");
 	}
-	if (!options.password || typeof options.password != "string") {
+	if (!pwd || typeof pwd != "string") {
 		throw new Error("Required password option is not specified.");
 	}
 
-	return get("{0}cmd=logon&email={1}&password={2}", apiUrl, options.email, options.password).then(function(d) {
-		return client(d.token);
+	return get("{0}cmd=logon&email={1}&password={2}", apiUrl, user, pwd).then(function(d) {
+		return client(isarray(d.token) ? d.token[0] : d.token);
 	});
 };
 
