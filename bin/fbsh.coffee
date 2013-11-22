@@ -4,15 +4,34 @@ read = require('read')
 askfor = require('askfor')
 Table = require('cli-table')
 
+help = ->
+    console.log 'commands:'
+    console.log '  ls                            - list active cases from current filter'
+    console.log '  ls f                          - list available filters'
+    console.log '  ls p                          - list available projects'
+    console.log '  ls m                          - list available milestones'
+    console.log '  ls u                          - list available users'
+    console.log '  search q                      - searches cases by specified q'
+    console.log '  take #case [comment]          - assign given case to logon user'
+    console.log '  resolve [#case] [comment]     - resolves current or given case with optional comment'
+    console.log '  assign #case userId [comment] - assign given case to given user with optional comment'
+    console.log '  log [#case] [comment]         - logs specified comment to given or current case'
+    done
+
 # instance of fogbugz client
 fb = null
+currentCase = null
+fcall = (f) -> f()
 # promise duck
-done = {done: (cb) -> cb()}
+done =
+    then: fcall
+    done: fcall
+    fail: fcall
 
-main = () -> auth repl
-repl = () -> read {prompt: 'fbsh> '}, (err, l) -> run(l).done(repl)
+main = -> auth repl
+repl = -> read {prompt: 'fbsh> '}, (err, l) -> printError(run(l)).done(repl)
 
-# runs specified line
+# evals specified line
 run = (l) ->
     args = l.split(' ').filter((w) -> !!w)
     cmd = args[0]
@@ -20,6 +39,11 @@ run = (l) ->
         when 'help' then help()
         when 'ls' then ls(args)
         when 'q' then process.exit(0)
+        when 'search' then search(args)
+        when 'take' then take(args)
+        when 'resolve' then resolve(args)
+        when 'assign' then assign(args)
+        when 'log' then log(args)
         else
             console.log('unknown command: %s', cmd)
             done
@@ -28,9 +52,10 @@ run = (l) ->
 cfgfile = __dirname + '/fbsh.conf.json'
 
 auth = (cb) ->
-    if (fs.existsSync(cfgfile))
+    if fs.existsSync cfgfile
         options = require(cfgfile)
-        if (options.token)
+        # TODO check token
+        if options.token
             start options, false, cb
         else
             askcfg cb
@@ -52,7 +77,7 @@ start = (options, updateConfig, cb) ->
         # TODO auth again
         process.exit(-1)
     p.done (client) ->
-        if (updateConfig)
+        if updateConfig
             delete options.password
             options.token = client.token
             fs.writeFileSync(cfgfile, toJson(options), 'utf8')
@@ -69,46 +94,59 @@ ls = (args) ->
             fb.people().then(printUsers)
         when 'm'
             fb.milestones().then(printMilestones)
-        when 'search'
-            fb.search(args[2]).then(printCases)
-        when 'assign'
-            printFail(fb.assign(args[2], args[3]))
-        when 'done'
-            printFail(fb.done(args[2], args[3]))
         else
             fb.search()
               # TODO do not hardcode active status
               .then((list) -> list.filter (x) -> x.status.id == 1)
               .then(printCases)
 
-help = () ->
-    console.log 'commands:'
-    console.log '  ls                       - list active cases from current filter'
-    console.log '  ls f                     - list available filters'
-    console.log '  ls p                     - list available projects'
-    console.log '  ls m                     - list available milestones'
-    console.log '  ls u                     - list available users'
-    console.log '  search q                 - searches cases by specified q'
-    console.log '  assign <caseId> <userId> - assignes specified case to given user'
-    done
+search = (args) ->
+    # TODO intelligent search
+    fb.search(args[2]).then(printCases)
+
+take = (args) ->
+    fb.take(args[2], args[3]).then (_) ->
+        currentCase = args[2]
+
+resolve = (args) ->
+    cid = parseInt(args[2], 10)
+    comment = args[3] || ''
+    if isNaN cid
+        comment = args[2]
+        if !currentCase then return error('no taken case')
+        cid = currentCase
+    fb.resolve(cid, comment)
+
+assign = (args) ->
+    cid = parseInt(args[2])
+    if isNaN cid then return error('expected case number')
+    fb.assign(args[2], args[3], args[4])
+
+log = (args) ->
+    cid = parseInt(args[2], 10)
+    comment = args[3] || ''
+    if isNaN cid
+        comment = args[2]
+        if !currentCase then return error('no taken case')
+        cid = currentCase
+    fb.log(cid, comment)
 
 # utils
 isfn = (x) -> typeof x == 'function'
-toJson = (x) -> JSON.stringify(x, null, 2)
-printJson = (_) -> [].slice.call(arguments, 0).forEach((x) -> console.log(toJson(x)))
-printFail = (p) ->
-    p.fail (err) -> console.log err
-    return p
+toJson = (x) -> JSON.stringify x, null, 2
+printJson = -> [].slice.call(arguments, 0).forEach((x) -> console.log(toJson x))
+printError = (promise) ->
+    promise.fail error
+    promise
 
-unwrap = (x) ->
-    if (x.id && x.name)
-        return x.name;
-    else
-        return x
+error = (msg) ->
+    console.log msg
+    done
+
+unwrap = (x) -> if x.id && x.name then x.name else x
 
 printTable = (list, keys) ->
-    if (list.length == 0)
-        return
+    if list.length == 0 then return done
     head = (keys || Object.keys(list[0])).filter (x) -> !isfn list[0][x]
     table = new Table({head: head})
     table.push.apply table, list.map (x) -> head.map (k) -> unwrap x[k]
@@ -127,10 +165,8 @@ printCases = (list) ->
     console.log table.toString()
 
 shortUserName = (user) ->
-    if (!user || !user.name)
-        return ''
+    if !user || !user.name then return ''
     arr = user.name.split(' ')
     if arr.length <= 1 then user.name else arr[0] + arr[1].substr(0, 1)
-    
 
 main()
