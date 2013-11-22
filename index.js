@@ -65,6 +65,13 @@ module.exports = function(options) {
 	function client(token) {
 
 		var clientUrl = format("{0}token={1}&", apiUrl, token);
+		var fb;
+		
+		function map(fn) {
+			return function(arr) {
+				return arr.map(fn);
+			};
+		}
 
 		function simpleCmd(name) {
 			return get("{0}cmd={1}", clientUrl, name);
@@ -96,7 +103,13 @@ module.exports = function(options) {
 		}
 
 		function search(q, max) {
-			return cmd("search", "q", q, "max", max, "cols", convert.searchCols).then(convert.cases);
+			return cmd("search", "q", q, "max", max, "cols", convert.searchCols)
+				.then(convert.cases)
+				.then(map(extend.case(fb)));
+		}
+
+		function events(id) {
+			return cmd("search", "q", "ixBug:" + id, "cols", "events").then(convert.events);
 		}
 
 		function create(info) {
@@ -114,16 +127,11 @@ module.exports = function(options) {
 			);
 		}
 
-		var fb = {
-			search: search
+		fb = {
+			search: search,
+			events: events
 		};
 		
-		function map(fn) {
-			return function(arr) {
-				return arr.map(fn);
-			};
-		}
-
 		return {
 			token: token,
 			logout: function() { return simpleCmd("logoff"); },
@@ -144,6 +152,7 @@ module.exports = function(options) {
 			
 			// list cases
 			search: search,
+			events: events,
 			
 			// editing cases
 			open: create,

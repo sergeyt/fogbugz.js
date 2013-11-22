@@ -21,6 +21,7 @@ help = ->
 # instance of fogbugz client
 fb = null
 currentCase = null
+lastCases = []
 fcall = (f) -> f()
 # promise duck
 done =
@@ -95,9 +96,18 @@ ls = (args) ->
         when 'm'
             fb.milestones().then printMilestones
         else
-            fb.search()
-              .then(filterActiveCases)
-              .then printCases
+            id = if args[1] then parseInt(args[1], 10) else NaN
+            if isNaN id
+                listActiveCases() 
+            else
+                caseObj = lastCases.filter((x) -> x.id == id)[0]
+                if caseObj then caseObj.events().then printEvents else done
+
+listActiveCases = ->
+    fb.search()
+    .then(filterActiveCases)
+    .then((list) -> lastCases = list)
+    .then printCases
 
 # TODO do not hardcode active status
 filterActiveCases = (list) -> list.filter (x) -> x.status.id == 1
@@ -164,6 +174,10 @@ printCases = (list) ->
     })
     table.push.apply table, list.map (x) -> [x.id || 0, shortUserName(x.assignee), x.title || '']
     console.log table.toString()
+
+printEvents = (list) ->
+    # TODO simple event list
+    printTable list, ['person', 'description']
 
 shortUserName = (user) ->
     if !user || !user.name then return ''

@@ -2,7 +2,7 @@ argv = require('optimist').argv
 Q = require('q')
 fb = require('./index')
 
-methods = ['filters', 'projects', 'areas', 'milestones', 'categories', 'priorities', 'search']
+methods = ['filters', 'projects', 'areas', 'milestones', 'categories', 'priorities', 'search', 'events']
 reserved = ['email', 'pwd', 'password', '_', '$0'].concat(methods)
 
 printAll = (_) -> [].slice.call(arguments, 0).forEach((x) -> console.log(JSON.stringify(x, null, 2)))
