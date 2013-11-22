@@ -12,8 +12,8 @@ function identity(x) { return x; }
 
 function format(f) {
 	var args = [].slice.call(arguments, 1);
-	return f.replace(/{(\d+)}/g, function(match, i) {
-		return typeof args[i] != 'undefined' ? args[i] : "";
+	return f.replace(/\{(\d+)\}/g, function(match, i) {
+		return typeof args[i] !== 'undefined' ? args[i] : "";
 	});
 }
 
@@ -51,13 +51,13 @@ module.exports = function(options) {
 	if (!options) {
 		throw new Error("Options are not specified.");
 	}
-	if (!options.url || typeof options.url != "string") {
+	if (!options.url || typeof options.url !== "string") {
 		throw new Error("Required url option is not specified.");
 	}
 
 	// normalize url
 	var apiUrl = options.url;
-	if (apiUrl.charAt(apiUrl.length - 1) != '/') {
+	if (apiUrl.charAt(apiUrl.length - 1) !== '/') {
 		apiUrl += '/';
 	}
 	apiUrl += 'api.asp?';
@@ -152,7 +152,7 @@ module.exports = function(options) {
 	}
 
 	// creating client with given token
-	if (typeof options.token == "string") {
+	if (typeof options.token === "string") {
 		if (!options.token) {
 			throw new Error("token option is empty.");
 		}
@@ -162,10 +162,10 @@ module.exports = function(options) {
 	// login then create client
 	var user = options.email || options.user;
 	var pwd = options.password || options.pwd;
-	if (!user || typeof user != "string") {
+	if (!user || typeof user !== "string") {
 		throw new Error("Required email option is not specified.");
 	}
-	if (!pwd || typeof pwd != "string") {
+	if (!pwd || typeof pwd !== "string") {
 		throw new Error("Required password option is not specified.");
 	}
 

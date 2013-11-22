@@ -61,20 +61,26 @@ start = (options, updateConfig, cb) ->
 
 ls = (args) ->
     switch args[1]
-        when 'm'
-            fb.milestones().then(printTable)
         when 'f'
             fb.filters().then(printTable)
+        when 'p'
+            fb.projects().then(printProjects)
+        when 'u'
+            fb.people().then(printUsers)
+        when 'm'
+            fb.milestones().then(printMilestones)
         else
             fb.search()
               # TODO do not hardcode active status
-              .then((list) -> list.filter (x) -> x.status == 1)
+              .then((list) -> list.filter (x) -> x.status.id == 1)
               .then(printCases)
 
 help = () ->
     console.log 'commands:'
-    console.log '  ls        - list active cases from current filter'
-    console.log '  ls filtes - list available filters'
+    console.log '  ls   - list active cases from current filter'
+    console.log '  ls f - list available filters'
+    console.log '  ls p - list available projects'
+    console.log '  ls m - list available milestones'
     done
 
 # utils
@@ -82,20 +88,37 @@ isfn = (x) -> typeof x == 'function'
 toJson = (x) -> JSON.stringify(x, null, 2)
 printJson = (_) -> [].slice.call(arguments, 0).forEach((x) -> console.log(toJson(x)))
 
-printTable = (list) ->
+unwrap = (x) ->
+    if (x.id && x.name)
+        return x.name;
+    else
+        return x
+
+printTable = (list, keys) ->
     if (list.length == 0)
         return
-    head = Object.keys(list[0]).filter (x) -> !isfn list[0][x]
+    head = (keys || Object.keys(list[0])).filter (x) -> !isfn list[0][x]
     table = new Table({head: head})
-    table.push.apply table, list.map (x) -> head.map (k) -> JSON.stringify x[k]
+    table.push.apply table, list.map (x) -> head.map (k) -> unwrap x[k]
     console.log table.toString()
+
+printProjects = (list) -> printTable list, ['id', 'name', 'email', 'owner']
+printMilestones = (list) -> printTable list, ['id', 'name', 'project']
+printUsers = (list) -> printTable list, ['id', 'name', 'email']
 
 printCases = (list) ->
     table = new Table({
-        head: ['#', 'title'],
-        colWidths: [8, 100]
+        head: ['#', 'assignee', 'title'],
+        colWidths: [8, 15, 85]
     })
-    table.push.apply table, list.map (x) -> [x.id || 0, x.title || '']
+    table.push.apply table, list.map (x) -> [x.id || 0, shortUserName(x.assignee), x.title || '']
     console.log table.toString()
+
+shortUserName = (user) ->
+    if (!user || !user.name)
+        return ''
+    arr = user.name.split(' ')
+    if arr.length <= 1 then user.name else arr[0] + arr[1].substr(0, 1)
+    
 
 main()
