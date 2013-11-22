@@ -36,16 +36,16 @@ run = (l) ->
     args = l.split(' ').filter((w) -> !!w)
     cmd = args[0]
     switch cmd
-        when 'help' then help()
-        when 'ls' then ls(args)
-        when 'q' then process.exit(0)
-        when 'search' then search(args)
-        when 'take' then take(args)
-        when 'resolve' then resolve(args)
-        when 'assign' then assign(args)
-        when 'log' then log(args)
+        when 'help' then do help
+        when 'ls' then ls args
+        when 'q' then process.exit 0
+        when 'search' then search args
+        when 'take' then take args
+        when 'resolve' then resolve args
+        when 'assign' then assign args
+        when 'log' then log args
         else
-            console.log('unknown command: %s', cmd)
+            console.log 'unknown command: %s', cmd
             done
 
 # CONFIG
@@ -87,26 +87,27 @@ start = (options, updateConfig, cb) ->
 ls = (args) ->
     switch args[1]
         when 'f'
-            fb.filters().then(printTable)
+            fb.filters().then printTable
         when 'p'
-            fb.projects().then(printProjects)
+            fb.projects().then printProjects
         when 'u'
-            fb.people().then(printUsers)
+            fb.people().then printUsers
         when 'm'
-            fb.milestones().then(printMilestones)
+            fb.milestones().then printMilestones
         else
             fb.search()
-              # TODO do not hardcode active status
-              .then((list) -> list.filter (x) -> x.status.id == 1)
-              .then(printCases)
+              .then(filterActiveCases)
+              .then printCases
+
+# TODO do not hardcode active status
+filterActiveCases = (list) -> list.filter (x) -> x.status.id == 1
 
 search = (args) ->
     # TODO intelligent search
     fb.search(args[2]).then(printCases)
 
 take = (args) ->
-    fb.take(args[2], args[3]).then (_) ->
-        currentCase = args[2]
+    fb.take(args[2], args[3]).then -> currentCase = args[2]
 
 resolve = (args) ->
     cid = parseInt(args[2], 10)
@@ -115,12 +116,12 @@ resolve = (args) ->
         comment = args[2]
         if !currentCase then return error('no taken case')
         cid = currentCase
-    fb.resolve(cid, comment)
+    fb.resolve cid, comment
 
 assign = (args) ->
     cid = parseInt(args[2])
     if isNaN cid then return error('expected case number')
-    fb.assign(args[2], args[3], args[4])
+    fb.assign args[2], args[3], args[4]
 
 log = (args) ->
     cid = parseInt(args[2], 10)
@@ -129,7 +130,7 @@ log = (args) ->
         comment = args[2]
         if !currentCase then return error('no taken case')
         cid = currentCase
-    fb.log(cid, comment)
+    fb.log cid, comment
 
 # utils
 isfn = (x) -> typeof x == 'function'
@@ -169,4 +170,4 @@ shortUserName = (user) ->
     arr = user.name.split(' ')
     if arr.length <= 1 then user.name else arr[0] + arr[1].substr(0, 1)
 
-main()
+do main
