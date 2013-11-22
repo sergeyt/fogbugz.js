@@ -69,6 +69,12 @@ ls = (args) ->
             fb.people().then(printUsers)
         when 'm'
             fb.milestones().then(printMilestones)
+        when 'search'
+            fb.search(args[2]).then(printCases)
+        when 'assign'
+            printFail(fb.assign(args[2], args[3]))
+        when 'done'
+            printFail(fb.done(args[2], args[3]))
         else
             fb.search()
               # TODO do not hardcode active status
@@ -77,16 +83,22 @@ ls = (args) ->
 
 help = () ->
     console.log 'commands:'
-    console.log '  ls   - list active cases from current filter'
-    console.log '  ls f - list available filters'
-    console.log '  ls p - list available projects'
-    console.log '  ls m - list available milestones'
+    console.log '  ls                       - list active cases from current filter'
+    console.log '  ls f                     - list available filters'
+    console.log '  ls p                     - list available projects'
+    console.log '  ls m                     - list available milestones'
+    console.log '  ls u                     - list available users'
+    console.log '  search q                 - searches cases by specified q'
+    console.log '  assign <caseId> <userId> - assignes specified case to given user'
     done
 
 # utils
 isfn = (x) -> typeof x == 'function'
 toJson = (x) -> JSON.stringify(x, null, 2)
 printJson = (_) -> [].slice.call(arguments, 0).forEach((x) -> console.log(toJson(x)))
+printFail = (p) ->
+    p.fail (err) -> console.log err
+    return p
 
 unwrap = (x) ->
     if (x.id && x.name)
