@@ -42,7 +42,8 @@
     "karma-phantomjs-launcher": "~0.1.0",
     "karma": "~0.10.4",
     "grunt-karma": "~0.6.2",
-    "optimist": "~0.6.0"
+    "optimist": "~0.6.0",
+    "grunt-coffeelint": "0.0.7"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
