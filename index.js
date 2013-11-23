@@ -1,5 +1,3 @@
-"use strict";
-
 // http://help.fogcreek.com/8202/xml-api
 var http = require('request'),
     xml2js = require('xml2js'),

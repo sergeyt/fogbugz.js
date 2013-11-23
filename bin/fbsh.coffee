@@ -194,7 +194,12 @@ printCases = (list) ->
 
 printEvents = (list) ->
 	list.forEach (e) ->
-		console.log '%s %s: %s', shortName(e.person), relTime(e.date), e.text || e.description
+		console.log.apply(console, [
+			'%s %s: %s',
+			shortName(e.person),
+			relTime(e.date),
+			(e.text || e.description)
+		])
 
 shortName = (user) ->
 	if !user || !user.name then return ''

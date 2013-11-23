@@ -22,10 +22,10 @@ module.exports = (grunt) ->
 				# Expected an assignment or function call and instead saw an expression.
 				'-W030': true,
 				globals:
-					jQuery: true,
+					node: true,
 					console: true,
 					module: true,
-					document: true
+					require: true
 			dev:
 				options:
 					ignores: ['*.min.js']
