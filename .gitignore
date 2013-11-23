@@ -3,5 +3,6 @@ npm-debug.log
 node_modules
 
 bin/fbsh.js
+bin/fbsh.conf.json
 test/test.js
 Gruntfile.js

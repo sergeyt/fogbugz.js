@@ -122,26 +122,69 @@ module.exports = function(options) {
 			return cmd("search", "q", "ixBug:" + id, "cols", "events").then(convert.events);
 		}
 
+        function caseCmd(cmdname, info){
+            return cmd(cmdname,
+                "ixBug", info.id,
+                "sTitle", info.title,
+                "sProject", info.project,  // TODO id or name
+                "sArea", info.area,  // TODO id or name
+                "sFixFor", info.milestone, // TODO id or name
+                "sCategory", info.category, // TODO map categories
+                "sPersonAssignedTo", info.person,  // TODO id or name
+                "sPriority", info.priority, // TODO id or name
+                "sTags", info.tags,
+                "sCustomerEmail", info.customerEmail,
+                "sEvent", info.comment
+            );
+        }
+
 		function create(info) {
-			return cmd("new",
-				"sTitle", info.title,
-				"sProject", info.project.id,
-				"sArea", info.area,
-				"sFixFor", info.milestone,
-				"sCategory", info.category, // TODO map categories
-				"sPersonAssignedTo", info.person,
-				"sPriority", info.priority, // TODO map priority
-				"sTags", info.tags,
-				"sCustomerEmail", info.customerEmail,
-				"sEvent", info.event
-			);
+			return caseCmd("new", info);
 		}
 
+        function edit(info) {
+            return caseCmd("edit", info);
+        }
+
+        // logs comment to specified case
+        function comment(id, text){
+            if (!id) {
+                throw new Error("case number is not specified");
+            }
+            if (!text){
+                throw new Error("comment is not specified");
+            }
+            return edit({id: id, comment: text});
+        }
+
+        function assign(id, user, comment){
+            if (!id){
+                throw new Error("case number is not specified");
+            }
+            if (!user){
+                throw new Error("user is not specified");
+            }
+            var userArg = isNaN(parseInt(user, 10)) ? "sPersonAssignedTo" : "ixPersonAssignedTo";
+            return cmd("assign", "ixBug", id, userArg, user, "sEvent", comment);
+        }
+
+        // internal API for extenders
 		fb = {
 			search: search,
 			events: events
 		};
-		
+
+        // resolves info about currently logon user
+        function resolveUser(){
+            return simpleCmd("viewPerson").then(convert.person);
+        }
+
+        function take(id, comment){
+            return resolveUser().then(function(user){
+                return assign(id, user.id, comment);
+            });
+        }
+
 		return {
 			token: token,
 			logout: function() { return simpleCmd("logoff"); },
@@ -166,7 +209,11 @@ module.exports = function(options) {
 			
 			// editing cases
 			open: create,
-			"new": create
+			"new": create,
+            edit: edit,
+            assign: assign,
+            take: take,
+            log: comment
 		};
 	}
 
