@@ -3,6 +3,8 @@ fogbugz = require('../index')
 read = require('read')
 askfor = require('askfor')
 Table = require('cli-table')
+memo = require('memoizee')
+iz = require('iz')
 
 fcall = (f) -> f()
 # promise duck
@@ -45,9 +47,9 @@ repl = -> read {prompt: '>>> '}, (err, l) -> printError(run(l)).done(repl)
 # evals specified line
 run = (l) ->
 	args = []
-	rx = /(\w|\d)+|'^[']*'|"^["]*"/g
+	rx = /('[^']*')|("[^"]*")|(\w|\d)+/g
 	while (m = rx.exec(l)) != null
-		args.push(m[0])
+		args.push unquote m[0]
 	cmd = args[0]
 	switch cmd
 		when 'help' then do help
@@ -62,6 +64,7 @@ run = (l) ->
 		when 'log' then log args
 		else unkcmd cmd
 
+unquote = (s) -> if s[0] == '"' or s[0] == "'" then s.substr 1, s.length - 2 else s
 unkcmd = (cmd) ->
 	console.log 'unknown command: %s', cmd
 	done
@@ -101,10 +104,10 @@ start = (options, updateConfig, cb) ->
 # list command handler
 ls = (args) ->
 	switch args[1]
-		when 'f' then fb.filters().then printTable
-		when 'p' then fb.projects().then printProjects
-		when 'u' then fb.people().then printUsers
-		when 'm' then fb.milestones().then printMilestones
+		when 'f' then filters().then printTable
+		when 'p' then projects().then printProjects
+		when 'u' then users().then printUsers
+		when 'm' then milestones().then printMilestones
 		else
 			id = if args[1] then parseInt(args[1], 10) else NaN
 			if isNaN id
@@ -112,6 +115,19 @@ ls = (args) ->
 			else
 					caseObj = lastCases.filter((x) -> x.id == id)[0]
 					if caseObj then caseObj.events().then printEvents else done
+
+# returns memoized Fb method
+fbmemo = (method) ->
+		fn = null
+		->
+			if fn == null
+				fn = memo(fb[method])
+			fn.apply fb, [].slice.call(arguments)
+
+filters = fbmemo('filters')
+projects = fbmemo('projects')
+users = fbmemo('people')
+milestones = fbmemo('milestones')
 
 listActiveCases = ->
 	fb.search()
@@ -145,15 +161,23 @@ resolve = (args) ->
 assign = (args) ->
 	cid = parseInt(args[1])
 	if isNaN cid then return error('expected case number')
-	# TODO inteligent resolving of user id
-	fb.assign cid, args[2], args[3]
+	resolveUser(args[2]).then (u) ->
+		fb.assign cid, u.id, args[3]
+
+resolveUser = (id) ->
+	if !id then return error('user id is not specified');
+	users().then (list) ->
+		if iz.email(id) then return (list.filter (u) -> u.email == id)[0]
+		if iz.int(id) then return (list.filter (u) -> u.id == id)[0]
+		id = id.toLowerCase()
+		(list.filter (u) -> u.name.toLowerCase() == id || shortName(u).toLowerCase() == id)[0]
 
 # log command impl
 log = (args) ->
-	cid = parseInt(args[2], 10)
-	comment = args[3] || ''
+	cid = parseInt(args[1], 10)
+	comment = args[2] || ''
 	if isNaN cid
-		comment = args[2]
+		comment = args[1]
 		if !currentCase then return error('no taken case')
 		cid = currentCase
 	fb.log cid, comment
@@ -208,6 +232,7 @@ printEvents = (list) ->
 shortName = (user) ->
 	if !user || !user.name then return ''
 	arr = user.name.split(' ')
+	if arr[0].length <= 2 then return user.name
 	if arr.length <= 1 then user.name else arr[0] + arr[1].substr(0, 1)
 
 relTime = (d) ->

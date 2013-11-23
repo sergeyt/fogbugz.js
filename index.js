@@ -174,13 +174,25 @@ module.exports = function(options) {
 			events: events
 		};
 
-        // resolves info about currently logon user
-        function resolveUser(){
+        function userInfo(user){
+            if (user || user.id || user.email){
+                if (user.id){
+                    return cmd("viewPerson", "ixPerson", user.id).then(convert.person);
+                }
+                if (user.email){
+                    return cmd("viewPerson", "sEmail", user.email).then(convert.person);
+                }
+                var userArg = isNaN(parseInt(user, 10)) ? "ixPerson" : "sEmail";
+                return cmd("viewPerson", userArg, user).then(convert.person);
+            }
             return simpleCmd("viewPerson").then(convert.person);
         }
 
+        // resolves info about currently logon user
+        function currentUser(){ return userInfo(); }
+
         function take(id, comment){
-            return resolveUser().then(function(user){
+            return currentUser().then(function(user){
                 return assign(id, user.id, comment);
             });
         }
@@ -213,7 +225,10 @@ module.exports = function(options) {
             edit: edit,
             assign: assign,
             take: take,
-            log: comment
+            log: comment,
+
+            // helpers
+            userInfo: userInfo
 		};
 	}
 
