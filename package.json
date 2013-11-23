@@ -47,6 +47,6 @@
     "grunt-cli": "~0.1.11"
   },
   "scripts": {
-    "test": ".\\node_modules\\.bin\\grunt test"
+    "test": "./node_modules/.bin/grunt test"
   }
 }
