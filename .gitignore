@@ -4,7 +4,10 @@ node_modules
 
 bin/fbsh.js
 bin/fbsh.conf.json
+
 test/test.js
+test/test.cmd
+
 Gruntfile.js
 
 .idea/workspace.xml
