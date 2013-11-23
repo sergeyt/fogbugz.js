@@ -17,32 +17,42 @@ function format(f) {
 	});
 }
 
-function get() {
-	var url = format.apply(null, [].slice.call(arguments));
+function getUrl(url) {
 	log && console.log("GET %s", url);
-	
+
 	var def = Q.defer();
-	
+
 	http.get(url, function(err, res, body) {
 		if (err) {
 			def.reject(err);
 		} else {
 			log && console.log(body);
-			xml2js.parseString(body, function(error, d) {
-				if (error) {
-					def.reject(error);
-				} else if (!d.response) {
-					def.reject("unexpected response!");
-				} else if (d.response.error) {
-					def.reject(d.response.error[0]._);
-				} else {
-					def.resolve(d.response);
-				}
-			});
+			def.resolve(body);
 		}
 	});
 
 	return def.promise;
+}
+
+function parseXml(xml) {
+	var def = Q.defer();
+	xml2js.parseString(xml, function(error, obj) {
+		if (error) {
+			def.reject(error);
+		} else if (!obj.response) {
+			def.reject("unexpected response!");
+		} else if (obj.response.error) {
+			def.reject(obj.response.error[0]._);
+		} else {
+			def.resolve(obj.response);
+		}
+	});
+	return def.promise;
+}
+
+function get() {
+	var url = format.apply(null, [].slice.call(arguments));
+	return getUrl(url).then(parseXml);
 }
 
 // creates new client with specified options

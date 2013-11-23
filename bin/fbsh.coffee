@@ -95,6 +95,7 @@ start = (options, updateConfig, cb) ->
 		fb = client
 		cb()
 
+# list command handler
 ls = (args) ->
 	switch args[1]
 		when 'f' then fb.filters().then printTable
@@ -118,13 +119,16 @@ listActiveCases = ->
 # TODO do not hardcode active status
 filterActiveCases = (list) -> list.filter (x) -> x.status.id == 1
 
+# search command handler
 search = (args) ->
 	# TODO intelligent search
 	fb.search(args[2]).then(printCases)
 
+# take command handler
 take = (args) ->
 	fb.take(args[2], args[3]).then -> currentCase = args[2]
 
+# resolve command handler
 resolve = (args) ->
 	cid = parseInt(args[2], 10)
 	comment = args[3] || ''
@@ -134,11 +138,13 @@ resolve = (args) ->
 		cid = currentCase
 	fb.resolve cid, comment
 
+# assign command handler
 assign = (args) ->
 	cid = parseInt(args[2])
 	if isNaN cid then return error('expected case number')
 	fb.assign args[2], args[3], args[4]
 
+# log command impl
 log = (args) ->
 	cid = parseInt(args[2], 10)
 	comment = args[3] || ''
@@ -179,18 +185,26 @@ printCases = (list) ->
 		colWidths: [8, 15, 85]
 	table.push.apply table, list.map (x) -> [
 		x.id || 0,
-		shortUserName(x.assignee),
+		shortName(x.assignee),
 		x.title || ''
 	]
 	console.log table.toString()
 
 printEvents = (list) ->
 	# TODO simple event list
-	printTable list, ['person', 'description']
+	list.forEach (e) ->
+		console.log '%s %s: %s', shortName(e.person), relTime(e.date), e.text || e.description
 
-shortUserName = (user) ->
+shortName = (user) ->
 	if !user || !user.name then return ''
 	arr = user.name.split(' ')
 	if arr.length <= 1 then user.name else arr[0] + arr[1].substr(0, 1)
+
+relTime = (d) ->
+	now = new Date()
+	if d.getDate() == now.getDate() then return 'today'
+	if d.getDate() == now.getDate() - 1 then return 'yesterday'
+	dif = now.getDate() - d.getDate()
+	return dif + ' days ago';
 
 do main
