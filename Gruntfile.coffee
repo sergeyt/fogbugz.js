@@ -51,5 +51,6 @@ module.exports = (grunt) ->
 		]
 
 	grunt.registerTask 'lint', ['coffeelint', 'jshint']
-	grunt.registerTask 'default', ['lint']
+	grunt.registerTask 'test', ['lint']
+	grunt.registerTask 'default', ['test']
 

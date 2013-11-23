@@ -43,9 +43,10 @@
     "karma": "~0.10.4",
     "grunt-karma": "~0.6.2",
     "optimist": "~0.6.0",
-    "grunt-coffeelint": "0.0.7"
+    "grunt-coffeelint": "0.0.7",
+    "grunt-cli": "~0.1.11"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": ".\\node_modules\\.bin\\grunt test"
   }
 }
