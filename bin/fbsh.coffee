@@ -4,6 +4,18 @@ read = require('read')
 askfor = require('askfor')
 Table = require('cli-table')
 
+fcall = (f) -> f()
+# promise duck
+done =
+	then: fcall
+	done: fcall
+	fail: fcall
+
+# instance of fogbugz client
+fb = null
+currentCase = null
+lastCases = []
+
 help = ->
 	cmds =
 		[
@@ -28,18 +40,6 @@ help = ->
 
 padr = (s,len) -> s + Array(len-s.length).join ' '
 
-# instance of fogbugz client
-fb = null
-currentCase = null
-lastCases = []
-fcall = (f) -> f()
-# promise duck
-done =
-	then: fcall
-	done: fcall
-	fail: fcall
-
-main = -> auth repl
 repl = -> read {prompt: '>>> '}, (err, l) -> printError(run(l)).done(repl)
 
 # evals specified line
@@ -180,23 +180,21 @@ printMilestones = (list) -> printTable list, ['id', 'name', 'project']
 printUsers = (list) -> printTable list, ['id', 'name', 'email']
 
 printCases = (list) ->
+	if list.length == 0 then return done
 	table = new Table
-		head: ['#', 'assignee', 'title'],
-		colWidths: [8, 15, 85]
+		head: ['#', 'assignee', 'title', 'tags'],
+		colWidths: [8, 15, 85, 10]
 	table.push.apply table, list.map (x) -> [
 		x.id || 0,
 		shortName(x.assignee),
-		x.title || ''
+		x.title || '',
+		(x.tags || []).join(', ')
 	]
 	console.log table.toString()
 
 printEvents = (list) ->
-	# TODO simple event list
 	list.forEach (e) ->
-		console.log '%s %s: %s',
-			shortName(e.person),
-			relTime(e.date),
-			e.text || e.description
+		console.log '%s %s: %s', shortName(e.person), relTime(e.date), e.text || e.description
 
 shortName = (user) ->
 	if !user || !user.name then return ''
@@ -210,4 +208,5 @@ relTime = (d) ->
 	dif = now.getDate() - d.getDate()
 	return dif + ' days ago'
 
+main = -> auth repl
 do main

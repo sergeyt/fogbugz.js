@@ -1,3 +1,5 @@
+"use strict";
+
 // http://help.fogcreek.com/8202/xml-api
 var http = require('request'),
     xml2js = require('xml2js'),
@@ -166,7 +168,7 @@ module.exports = function(options) {
 			
 			// editing cases
 			open: create,
-			"new": create,
+			"new": create
 		};
 	}
 
