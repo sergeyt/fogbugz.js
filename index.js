@@ -106,7 +106,7 @@ module.exports = function(options) {
 				var val = arguments[i++];
 				if (val) {
 					url += "&" + arg;
-					url += "=" + encodeURIComponent(val);
+					url += "=" + encodeURIComponent(String(val));
 				}
 			}
 			return get(url);

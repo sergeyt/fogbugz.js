@@ -44,7 +44,10 @@ repl = -> read {prompt: '>>> '}, (err, l) -> printError(run(l)).done(repl)
 
 # evals specified line
 run = (l) ->
-	args = l.split(' ').filter (w) -> !!w
+	args = []
+	rx = /(\w|\d)+|'^[']*'|"^["]*"/g
+	while (m = rx.exec(l)) != null
+		args.push(m[0])
 	cmd = args[0]
 	switch cmd
 		when 'help' then do help
@@ -126,7 +129,7 @@ search = (args) ->
 
 # take command handler
 take = (args) ->
-	fb.take(args[2], args[3]).then -> currentCase = args[2]
+	fb.take(args[1], args[2]).then -> currentCase = args[1]
 
 # resolve command handler
 resolve = (args) ->
@@ -140,9 +143,10 @@ resolve = (args) ->
 
 # assign command handler
 assign = (args) ->
-	cid = parseInt(args[2])
+	cid = parseInt(args[1])
 	if isNaN cid then return error('expected case number')
-	fb.assign args[2], args[3], args[4]
+	# TODO inteligent resolving of user id
+	fb.assign cid, args[2], args[3]
 
 # log command impl
 log = (args) ->
