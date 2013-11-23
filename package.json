@@ -26,7 +26,8 @@
     "read": "~1.0.5",
     "cli-table": "~0.2.0",
     "memoizee": "~0.2.6",
-    "iz": "~0.3.0"
+    "iz": "~0.3.0",
+    "pretty-date": "~0.1.1"
   },
   "devDependencies": {
     "grunt": "~0.4.1",

@@ -26,10 +26,12 @@ help = ->
 			['ls p', 'list available projects'],
 			['ls m', 'list available milestones']
 			['ls u', 'list available users'],
+			['u id', 'print user info'],
 			['search q', 'searches cases by specified q'],
 			['take #case [comment]', 'assign given case to logon user'],
 			['resolve [#case] [comment]', 'resolves current or given case']
 			['assign #case userId [comment]', 'assign given case to given user'],
+			['kick #case [comment]', 'return given case back to team'],
 			['log [#case] [comment]', 'logs specified comment to given case'],
 			['q[uit]', 'exit from this shell'],
 			['exit', 'exit from this shell'],
@@ -54,14 +56,15 @@ run = (l) ->
 	switch cmd
 		when 'help' then do help
 		when 'ls' then ls args
-		when 'q' then process.exit 0
-		when 'quit' then process.exit 0
-		when 'exit' then process.exit 0
 		when 'search' then search args
 		when 'take' then take args
 		when 'resolve' then resolve args
 		when 'assign' then assign args
 		when 'log' then log args
+		when 'u' then resolveUser(args[1]).then((x) -> [x]).then(printUsers)
+		when 'q' then process.exit 0
+		when 'quit' then process.exit 0
+		when 'exit' then process.exit 0
 		else unkcmd cmd
 
 unquote = (s) ->
@@ -156,6 +159,7 @@ resolve = (args) ->
 		comment = args[2]
 		if !currentCase then return error('no taken case')
 		cid = currentCase
+	# pass status and assignee
 	fb.resolve cid, comment
 
 # assign command handler
@@ -168,10 +172,12 @@ assign = (args) ->
 resolveUser = (id) ->
 	if !id then return error('user id is not specified')
 	users().then (list) ->
-		if iz.email(id) then return (list.filter (u) -> u.email == id)[0]
-		if iz.int(id) then return (list.filter (u) -> u.id == id)[0]
+		if iz.email(id)
+			return (list.filter (u) -> u.email.indexOf(id) >= 0)[0]
+		if iz.int(id)
+			return (list.filter (u) -> u.id == id)[0]
 		id = id.toLowerCase()
-		(list.filter (u) ->
+		return (list.filter (u) ->
 			u.name.toLowerCase() == id || shortName(u).toLowerCase() == id)[0]
 
 # log command impl
@@ -199,6 +205,7 @@ error = (msg) ->
 unwrap = (x) -> if x.id && x.name then x.name else x
 
 printTable = (list, keys) ->
+	list = list.filter (x) -> x != null and x != undefined
 	if list.length == 0 then return done
 	head = (keys || Object.keys(list[0])).filter (x) -> !isfn list[0][x]
 	table = new Table({head: head})
@@ -227,7 +234,7 @@ printEvents = (list) ->
 		console.log.apply(console, [
 			'%s %s: %s',
 			shortName(e.person),
-			relTime(e.date),
+			ago(e.date),
 			(e.text || e.description)
 		])
 
@@ -237,12 +244,7 @@ shortName = (user) ->
 	if arr[0].length <= 2 then return user.name
 	if arr.length <= 1 then user.name else arr[0] + arr[1].substr(0, 1)
 
-relTime = (d) ->
-	now = new Date()
-	if d.getDate() == now.getDate() then return 'today'
-	if d.getDate() == now.getDate() - 1 then return 'yesterday'
-	dif = now.getDate() - d.getDate()
-	return dif + ' days ago'
+ago = (d) -> require('pretty-date').format(d)
 
 main = -> auth repl
 do main
