@@ -64,7 +64,8 @@ run = (l) ->
 		when 'log' then log args
 		else unkcmd cmd
 
-unquote = (s) -> if s[0] == '"' or s[0] == "'" then s.substr 1, s.length - 2 else s
+unquote = (s) ->
+	if s[0] == '"' or s[0] == "'" then s.substr 1, s.length - 2 else s
 unkcmd = (cmd) ->
 	console.log 'unknown command: %s', cmd
 	done
@@ -165,12 +166,13 @@ assign = (args) ->
 		fb.assign cid, u.id, args[3]
 
 resolveUser = (id) ->
-	if !id then return error('user id is not specified');
+	if !id then return error('user id is not specified')
 	users().then (list) ->
 		if iz.email(id) then return (list.filter (u) -> u.email == id)[0]
 		if iz.int(id) then return (list.filter (u) -> u.id == id)[0]
 		id = id.toLowerCase()
-		(list.filter (u) -> u.name.toLowerCase() == id || shortName(u).toLowerCase() == id)[0]
+		(list.filter (u) ->
+			u.name.toLowerCase() == id || shortName(u).toLowerCase() == id)[0]
 
 # log command impl
 log = (args) ->
