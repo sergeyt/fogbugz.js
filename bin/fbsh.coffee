@@ -193,7 +193,10 @@ printCases = (list) ->
 printEvents = (list) ->
 	# TODO simple event list
 	list.forEach (e) ->
-		console.log '%s %s: %s', shortName(e.person), relTime(e.date), e.text || e.description
+		console.log '%s %s: %s',
+			shortName(e.person),
+			relTime(e.date),
+			e.text || e.description
 
 shortName = (user) ->
 	if !user || !user.name then return ''
@@ -205,6 +208,6 @@ relTime = (d) ->
 	if d.getDate() == now.getDate() then return 'today'
 	if d.getDate() == now.getDate() - 1 then return 'yesterday'
 	dif = now.getDate() - d.getDate()
-	return dif + ' days ago';
+	return dif + ' days ago'
 
 do main
