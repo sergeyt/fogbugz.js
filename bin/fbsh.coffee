@@ -41,6 +41,7 @@ help = ->
 			['log [#case] [comment]', 'logs specified comment to given case'],
 			['q[uit]', 'exit from this shell'],
 			['exit', 'exit from this shell'],
+			['help', 'print this command list'],
 		]
 	console.log 'commands:'
 	col = Math.max.apply(null, cmds.map (x) -> x[0].length)
@@ -170,27 +171,30 @@ workflow = ->
 take = (args) ->
 	fb.take(args[1], args[2]).then -> currentCase = args[1]
 
+parseArgs1 = (args) ->
+	id = parseInt(args[1], 10)
+	comment = args[2] || ''
+	if isNaN id
+		comment = args[1]
+		if !currentCase then return Q.reject('no taken case')
+		id = currentCase
+	return Q({id: id, comment: comment});
+
 # resolve command handler
 resolve = (args) ->
-	cid = parseInt(args[2], 10)
-	comment = args[3] || ''
-	if isNaN cid
-		comment = args[2]
-		if !currentCase then return error('no taken case')
-		cid = currentCase
-	# pass status and assignee
-	fb.resolve cid, comment
+	parseArgs1(args).then (c) ->
+		wf = workflow()
+		if not wf.resolve then return Q.reject('no resolve workflow')
+		fb.resolve
+			id: c.id
+			comment: c.comment
+			status: wf.resolve.status
+			user: wf.resolve.user
 
 # close command handler
 close = (args) ->
-	cid = parseInt(args[1], 10)
-	comment = args[2] || ''
-	if isNaN cid
-		comment = args[1]
-		if !currentCase then return error('no taken case')
-		cid = currentCase
-	# pass status and assignee
-	fb.close cid, comment
+	parseArgs1(args).then (c) ->
+		fb.close c.id, c.comment
 
 # reopen command handler
 reopen = (args) ->
@@ -205,15 +209,10 @@ assign = (args) ->
 
 # kick command handler
 kick = (args) ->
-	cid = parseInt(args[1], 10)
-	comment = args[2] || ''
-	if isNaN cid
-		comment = args[1]
-		if !currentCase then return error('no taken case')
-		cid = currentCase
-	wf = workflow()
-	resolveUser(wf.kick).then (u) ->
-		fb.assign cid, u.id, comment
+	parseArgs1(args).then (c) ->
+		wf = workflow()
+		resolveUser(wf.kick).then (u) ->
+			fb.assign c.id, u.id, c.comment
 
 resolveUser = (id) ->
 	if !id then return error('user id is not specified')
@@ -228,13 +227,8 @@ resolveUser = (id) ->
 
 # log command impl
 log = (args) ->
-	cid = parseInt(args[1], 10)
-	comment = args[2] || ''
-	if isNaN cid
-		comment = args[1]
-		if !currentCase then return error('no taken case')
-		cid = currentCase
-	fb.log cid, comment
+	parseArgs1(args).then (c) ->
+		fb.log c.id, c.comment
 
 # utils
 isfn = (x) -> typeof x == 'function'
@@ -278,8 +272,8 @@ printCases = (list) ->
 
 printEvents = (list) ->
 	lines = list.map (e) ->
-		shortName(e.person) +
-		ago(e.date) + ':' +
+		shortName(e.person) + ' ' +
+		ago(e.date) + ': ' +
 		(e.text || e.description)
 	print lines.join '\n'
 
