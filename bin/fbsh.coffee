@@ -6,8 +6,7 @@ Table = require('cli-table')
 memo = require('memoizee')
 iz = require('iz')
 Q = require('q')
-waitkey = require('waitkey')
-require('./array-ext')
+print = require('node-more')
 
 fcall = (f) -> f()
 # promise duck
@@ -240,20 +239,6 @@ log = (args) ->
 # utils
 isfn = (x) -> typeof x == 'function'
 toJson = (x) -> JSON.stringify x, null, 2
-
-print = (text) ->
-	lines = text.split('\n')
-	max = 25
-	if lines.length <= max
-		do process.stdin.resume
-		console.log text
-		return done
-	console.log lines.take(max).join('\n')
-	rest = lines.skip(max).join('\n')
-	def = Q.defer()
-	waitkey 'space', ->
-		print(rest).done (v) -> def.resolve v
-	return def.promise
 
 printJson = -> [].slice.call(arguments, 0).forEach (x) -> print(toJson x)
 printError = (promise) ->

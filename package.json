@@ -28,7 +28,7 @@
     "memoizee": "~0.2.6",
     "iz": "~0.3.0",
     "pretty-date": "~0.1.1",
-    "waitkey": "0.0.2"
+    "node-more": "0.0.2"
   },
   "devDependencies": {
     "grunt": "~0.4.1",
