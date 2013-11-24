@@ -29,7 +29,7 @@ module.exports = (grunt) ->
 			dev:
 				options:
 					ignores: ['*.min.js']
-				src: ['lib/*.js', '*.js']
+				src: ['lib/*.js', 'bin/*.js', '*.js']
 
 		coffeelint:
 			options:

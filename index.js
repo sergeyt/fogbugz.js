@@ -197,6 +197,24 @@ module.exports = function(options) {
             });
         }
 
+        function close(id, comment){
+            return cmd("close", "ixBug", id, "sEvent", comment);
+        }
+
+        function reopen(id, comment){
+            return cmd("reopen", "ixBug", id, "sEvent", comment);
+        }
+
+        function resolve(data){
+            var userArg = isNaN(parseInt(data.user, 10)) ? "sPersonAssignedTo" : "ixPersonAssignedTo";
+            var statusArg = isNaN(parseInt(data.status, 10)) ? "sStatus" : "ixStatus";
+            return cmd("resolve",
+                "ixBug", data.id,
+                statusArg, data.status,
+                userArg, data.user,
+                "sEvent", data.comment);
+        }
+
 		return {
 			token: token,
 			logout: function() { return simpleCmd("logoff"); },
@@ -208,6 +226,7 @@ module.exports = function(options) {
 			areas: list("Areas", convert.areas),
 			categories: list("Categories", convert.categories),
 			priorities: list("Priorities", convert.priorities),
+            statuses: list("Statuses", convert.statuses),
 			milestones: list("FixFors", convert.milestones, map(extend.milestone(fb))),
 			// TODO provide converters for below lists
 			mailboxes: list("Mailboxes"),
@@ -226,6 +245,9 @@ module.exports = function(options) {
             assign: assign,
             take: take,
             log: comment,
+            resolve: resolve,
+            close: close,
+            reopen: reopen,
 
             // helpers
             userInfo: userInfo

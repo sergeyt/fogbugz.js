@@ -29,10 +29,14 @@ help = ->
 			['ls p', 'list available projects'],
 			['ls m', 'list available milestones']
 			['ls u', 'list available users'],
+			['ls c', 'list available case categories'],
+			['ls s', 'list available case statuses'],
 			['u id', 'print user info'],
 			['search q', 'searches cases by specified q'],
 			['take #case [comment]', 'assign given case to logon user'],
 			['resolve [#case] [comment]', 'resolves current or given case']
+			['close #case [comment]', 'close given case'],
+			['reopen #case [comment]', 'reopen given case'],
 			['assign #case userId [comment]', 'assign given case to given user'],
 			['kick #case [comment]', 'return given case back to team'],
 			['log [#case] [comment]', 'logs specified comment to given case'],
@@ -63,6 +67,9 @@ run = (l) ->
 		when 'take' then take args
 		when 'resolve' then resolve args
 		when 'assign' then assign args
+		when 'close' then close args
+		when 'reopen' then reopen args
+		when 'kick' then kick args
 		when 'log' then log args
 		when 'u' then resolveUser(args[1]).then((x) -> [x]).then(printUsers)
 		when 'q' then process.exit 0
@@ -115,6 +122,8 @@ ls = (args) ->
 		when 'p' then projects().then printProjects
 		when 'u' then users().then printUsers
 		when 'm' then milestones().then printMilestones
+		when 'c' then categories().then printTable
+		when 's' then statuses().then printTable
 		else
 			id = if args[1] then parseInt(args[1], 10) else NaN
 			if isNaN id
@@ -135,6 +144,8 @@ filters = fbmemo('filters')
 projects = fbmemo('projects')
 users = fbmemo('people')
 milestones = fbmemo('milestones')
+categories = fbmemo('categories')
+statuses = fbmemo('statuses')
 
 listActiveCases = ->
 	fb.search()
@@ -149,6 +160,12 @@ filterActiveCases = (list) -> list.filter (x) -> x.status.id == 1
 search = (args) ->
 	# TODO intelligent search
 	fb.search(args[2]).then(printCases)
+
+workflowFile = __dirname + '/workflow.json'
+workflow = ->
+	if fs.existsSync workflowFile
+		return require workflowFile
+	return {}
 
 # take command handler
 take = (args) ->
@@ -165,12 +182,39 @@ resolve = (args) ->
 	# pass status and assignee
 	fb.resolve cid, comment
 
+# close command handler
+close = (args) ->
+	cid = parseInt(args[1], 10)
+	comment = args[2] || ''
+	if isNaN cid
+		comment = args[1]
+		if !currentCase then return error('no taken case')
+		cid = currentCase
+	# pass status and assignee
+	fb.close cid, comment
+
+# reopen command handler
+reopen = (args) ->
+	fb.close args[1], args[2]
+
 # assign command handler
 assign = (args) ->
 	cid = parseInt(args[1])
 	if isNaN cid then return error('expected case number')
 	resolveUser(args[2]).then (u) ->
 		fb.assign cid, u.id, args[3]
+
+# kick command handler
+kick = (args) ->
+	cid = parseInt(args[1], 10)
+	comment = args[2] || ''
+	if isNaN cid
+		comment = args[1]
+		if !currentCase then return error('no taken case')
+		cid = currentCase
+	wf = workflow()
+	resolveUser(wf.kick).then (u) ->
+		fb.assign cid, u.id, comment
 
 resolveUser = (id) ->
 	if !id then return error('user id is not specified')
