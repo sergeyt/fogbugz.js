@@ -27,7 +27,8 @@
     "cli-table": "~0.2.0",
     "memoizee": "~0.2.6",
     "iz": "~0.3.0",
-    "pretty-date": "~0.1.1"
+    "pretty-date": "~0.1.1",
+    "waitkey": "0.0.2"
   },
   "devDependencies": {
     "grunt": "~0.4.1",
