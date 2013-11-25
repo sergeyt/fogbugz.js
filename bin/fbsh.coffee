@@ -178,7 +178,7 @@ parseArgs1 = (args) ->
 		comment = args[1]
 		if !currentCase then return Q.reject('no taken case')
 		id = currentCase
-	return Q({id: id, comment: comment});
+	return Q({id: id, comment: comment})
 
 # resolve command handler
 resolve = (args) ->
@@ -261,7 +261,7 @@ printCases = (list) ->
 	if list.length == 0 then return done
 	table = new Table
 		head: ['#', 'assignee', 'title', 'tags'],
-		colWidths: [8, 15, 85, 10]
+		colWidths: [8, 10, 80, 10]
 	table.push.apply table, list.map (x) -> [
 		x.id || 0,
 		shortName(x.assignee),

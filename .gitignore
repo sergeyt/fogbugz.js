@@ -1,6 +1,7 @@
 .coverage
 npm-debug.log
 node_modules
+*.min.js
 
 bin/fbsh.js
 bin/fbsh.conf.json
