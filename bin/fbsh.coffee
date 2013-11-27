@@ -30,6 +30,7 @@ help = ->
 			['ls u', 'list available users'],
 			['ls c', 'list available case categories'],
 			['ls s', 'list available case statuses'],
+			['ls l', 'list available priorities'],
 			['u id', 'print user info'],
 			['search q', 'searches cases by specified q'],
 			['take #case [comment]', 'assign given case to logon user'],
@@ -124,6 +125,7 @@ ls = (args) ->
 		when 'm' then milestones().then printMilestones
 		when 'c' then categories().then printTable
 		when 's' then statuses().then printTable
+		when 'l' then priorities().then printTable
 		else
 			id = if args[1] then parseInt(args[1], 10) else NaN
 			if isNaN id
@@ -146,6 +148,7 @@ users = fbmemo('people')
 milestones = fbmemo('milestones')
 categories = fbmemo('categories')
 statuses = fbmemo('statuses')
+priorities = fbmemo('priorities')
 
 listActiveCases = ->
 	fb.search()
