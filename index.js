@@ -1,14 +1,16 @@
 // http://help.fogcreek.com/8202/xml-api
 var http = require('request'),
-    xml2js = require('xml2js'),
-    Q = require('q'),
-    convert = require('./lib/converters'),
-    extend = require('./lib/extenders'),
-    isarray = require('isarray');
+		xml2js = require('xml2js'),
+		Q = require('q'),
+		convert = require('./lib/converters'),
+		extend = require('./lib/extenders'),
+		isarray = require('isarray');
 
 var log = false;
 
-function identity(x) { return x; }
+function identity(x) {
+	return x;
+}
 
 function format(f) {
 	var args = [].slice.call(arguments, 1);
@@ -76,7 +78,7 @@ module.exports = function(options) {
 
 		var clientUrl = format("{0}token={1}&", apiUrl, token);
 		var fb;
-		
+
 		function map(fn) {
 			return function(arr) {
 				return arr.map(fn);
@@ -114,111 +116,114 @@ module.exports = function(options) {
 
 		function search(q, max) {
 			return cmd("search", "q", q, "max", max, "cols", convert.searchCols)
-				.then(convert.cases)
-				.then(map(extend.case(fb)));
+					.then(convert.cases);
 		}
 
 		function events(id) {
 			return cmd("search", "q", "ixBug:" + id, "cols", "events").then(convert.events);
 		}
 
-        function caseCmd(cmdname, info){
-            return cmd(cmdname,
-                "ixBug", info.id,
-                "sTitle", info.title,
-                "sProject", info.project,  // TODO id or name
-                "sArea", info.area,  // TODO id or name
-                "sFixFor", info.milestone, // TODO id or name
-                "sCategory", info.category, // TODO map categories
-                "sPersonAssignedTo", info.person,  // TODO id or name
-                "sPriority", info.priority, // TODO id or name
-                "sTags", info.tags,
-                "sCustomerEmail", info.customerEmail,
-                "sEvent", info.comment
-            );
-        }
+		function caseCmd(cmdname, info) {
+			return cmd(cmdname,
+					"ixBug", info.id,
+					"sTitle", info.title,
+					"sProject", info.project,  // TODO id or name
+					"sArea", info.area,  // TODO id or name
+					"sFixFor", info.milestone, // TODO id or name
+					"sCategory", info.category, // TODO map categories
+					"sPersonAssignedTo", info.person,  // TODO id or name
+					"sPriority", info.priority, // TODO id or name
+					"sTags", info.tags,
+					"sCustomerEmail", info.customerEmail,
+					"sEvent", info.comment
+			);
+		}
 
 		function create(info) {
 			return caseCmd("new", info);
 		}
 
-        function edit(info) {
-            return caseCmd("edit", info);
-        }
+		function edit(info) {
+			return caseCmd("edit", info);
+		}
 
-        // logs comment to specified case
-        function comment(id, text){
-            if (!id) {
-                throw new Error("case number is not specified");
-            }
-            if (!text){
-                throw new Error("comment is not specified");
-            }
-            return edit({id: id, comment: text});
-        }
+		// logs comment to specified case
+		function comment(id, text) {
+			if (!id) {
+				throw new Error("case number is not specified");
+			}
+			if (!text) {
+				throw new Error("comment is not specified");
+			}
+			return edit({id: id, comment: text});
+		}
 
-        function assign(id, user, comment){
-            if (!id){
-                throw new Error("case number is not specified");
-            }
-            if (!user){
-                throw new Error("user is not specified");
-            }
-            var userArg = isNaN(parseInt(user, 10)) ? "sPersonAssignedTo" : "ixPersonAssignedTo";
-            return cmd("assign", "ixBug", id, userArg, user, "sEvent", comment);
-        }
+		function assign(id, user, comment) {
+			if (!id) {
+				throw new Error("case number is not specified");
+			}
+			if (!user) {
+				throw new Error("user is not specified");
+			}
+			var userArg = isNaN(parseInt(user, 10)) ? "sPersonAssignedTo" : "ixPersonAssignedTo";
+			return cmd("assign", "ixBug", id, userArg, user, "sEvent", comment);
+		}
 
-        // internal API for extenders
+		// internal API for extenders
 		fb = {
 			search: search,
 			events: events
 		};
 
-        function userInfo(user){
-            if (user || user.id || user.email){
-                if (user.id){
-                    return cmd("viewPerson", "ixPerson", user.id).then(convert.person);
-                }
-                if (user.email){
-                    return cmd("viewPerson", "sEmail", user.email).then(convert.person);
-                }
-                var userArg = isNaN(parseInt(user, 10)) ? "ixPerson" : "sEmail";
-                return cmd("viewPerson", userArg, user).then(convert.person);
-            }
-            return simpleCmd("viewPerson").then(convert.person);
-        }
+		function userInfo(user) {
+			if (user || user.id || user.email) {
+				if (user.id) {
+					return cmd("viewPerson", "ixPerson", user.id).then(convert.person);
+				}
+				if (user.email) {
+					return cmd("viewPerson", "sEmail", user.email).then(convert.person);
+				}
+				var userArg = isNaN(parseInt(user, 10)) ? "ixPerson" : "sEmail";
+				return cmd("viewPerson", userArg, user).then(convert.person);
+			}
+			return simpleCmd("viewPerson").then(convert.person);
+		}
 
-        // resolves info about currently logon user
-        function currentUser(){ return userInfo(); }
+		// resolves info about currently logon user
+		function currentUser() {
+			return userInfo();
+		}
 
-        function take(id, comment){
-            return currentUser().then(function(user){
-                return assign(id, user.id, comment);
-            });
-        }
+		function take(id, comment) {
+			return currentUser().then(function(user) {
+				return assign(id, user.id, comment);
+			});
+		}
 
-        function close(id, comment){
-            return cmd("close", "ixBug", id, "sEvent", comment);
-        }
+		function close(id, comment) {
+			return cmd("close", "ixBug", id, "sEvent", comment);
+		}
 
-        function reopen(id, comment){
-            return cmd("reopen", "ixBug", id, "sEvent", comment);
-        }
+		function reopen(id, comment) {
+			return cmd("reopen", "ixBug", id, "sEvent", comment);
+		}
 
-        function resolve(data){
-            var userArg = isNaN(parseInt(data.user, 10)) ? "sPersonAssignedTo" : "ixPersonAssignedTo";
-            var statusArg = isNaN(parseInt(data.status, 10)) ? "sStatus" : "ixStatus";
-            return cmd("resolve",
-                "ixBug", data.id,
-                statusArg, data.status,
-                userArg, data.user,
-                "sEvent", data.comment);
-        }
+		function resolve(data) {
+			var userArg = isNaN(parseInt(data.user, 10)) ? "sPersonAssignedTo" : "ixPersonAssignedTo";
+			var statusArg = isNaN(parseInt(data.status, 10)) ? "sStatus" : "ixStatus";
+			return cmd("resolve",
+					"ixBug", data.id,
+					statusArg, data.status,
+					userArg, data.user,
+					"sEvent", data.comment);
+		}
 
 		return {
 			token: token,
-			logout: function() { return simpleCmd("logoff"); },
-			
+			logout: function() {
+				return simpleCmd("logoff");
+			},
+
 			// lists
 			filters: list("Filters", convert.filters),
 			projects: list("Projects", convert.projects),
@@ -226,31 +231,31 @@ module.exports = function(options) {
 			areas: list("Areas", convert.areas),
 			categories: list("Categories", convert.categories),
 			priorities: list("Priorities", convert.priorities),
-            statuses: list("Statuses", convert.statuses),
+			statuses: list("Statuses", convert.statuses),
 			milestones: list("FixFors", convert.milestones, map(extend.milestone(fb))),
 			// TODO provide converters for below lists
 			mailboxes: list("Mailboxes"),
 			wikis: list("Wikis"),
 			templates: list("Templates"), // wiki templates
 			snippets: list("Snippets"),
-			
+
 			// list cases
 			search: search,
 			events: events,
-			
+
 			// editing cases
 			open: create,
 			"new": create,
-            edit: edit,
-            assign: assign,
-            take: take,
-            log: comment,
-            resolve: resolve,
-            close: close,
-            reopen: reopen,
+			edit: edit,
+			assign: assign,
+			take: take,
+			log: comment,
+			resolve: resolve,
+			close: close,
+			reopen: reopen,
 
-            // helpers
-            userInfo: userInfo
+			// helpers
+			userInfo: userInfo
 		};
 	}
 
