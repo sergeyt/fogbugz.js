@@ -4,7 +4,7 @@ fb = require('../index')
 
 methods = [
 		'filters', 'projects', 'areas', 'milestones',
-		'categories', 'priorities', 'search', 'events'
+		'categories', 'priorities', 'people', 'search', 'events'
 	]
 
 reserved = ['email', 'pwd', 'password', '_', '$0'].concat(methods)
