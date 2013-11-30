@@ -67,6 +67,11 @@ module.exports = function(options) {
 		throw new Error("Required url option is not specified.");
 	}
 
+	// use only for dev purposes!
+	if (!!options.verbose){
+		log = true;
+	}
+
 	// normalize url
 	var apiUrl = options.url;
 	if (apiUrl.charAt(apiUrl.length - 1) !== '/') {
