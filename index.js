@@ -255,7 +255,12 @@ module.exports = function(options) {
 			reopen: reopen,
 
 			// helpers
-			userInfo: userInfo
+			userInfo: userInfo,
+
+			// extends specified milestone object with cases
+			milestone: function(m){
+				return extend.milestone(fb)(m);
+			}
 		};
 	}
 
