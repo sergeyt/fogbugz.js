@@ -1,6 +1,6 @@
 {
   "name": "fogbugz.js",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "FogBugz client for nodejs.",
   "license": "MIT",
   "main": "index.js",
