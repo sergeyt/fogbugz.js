@@ -128,19 +128,22 @@ module.exports = function(options) {
 			return cmd("search", "q", "ixBug:" + id, "cols", "events").then(convert.events);
 		}
 
-		function caseCmd(cmdname, info) {
+		function caseCmd(cmdname, data) {
+			var userArg = isNaN(parseInt(data.user, 10)) ? "sPersonAssignedTo" : "ixPersonAssignedTo";
+			var statusArg = isNaN(parseInt(data.status, 10)) ? "sStatus" : "ixStatus";
 			return cmd(cmdname,
-					"ixBug", info.id,
-					"sTitle", info.title,
-					"sProject", info.project,  // TODO id or name
-					"sArea", info.area,  // TODO id or name
-					"sFixFor", info.milestone, // TODO id or name
-					"sCategory", info.category, // TODO map categories
-					"sPersonAssignedTo", info.person,  // TODO id or name
-					"sPriority", info.priority, // TODO id or name
-					"sTags", info.tags,
-					"sCustomerEmail", info.customerEmail,
-					"sEvent", info.comment
+					"ixBug", data.id,
+					"sTitle", data.title,
+					"sProject", data.project,  // TODO id or name
+					"sArea", data.area,  // TODO id or name
+					"sFixFor", data.milestone, // TODO id or name
+					"sCategory", data.category, // TODO map categories
+					userArg, data.user,
+					statusArg, data.status,
+					"sPriority", data.priority, // TODO id or name
+					"sTags", data.tags,
+					"sCustomerEmail", data.customerEmail,
+					"sEvent", data.comment
 			);
 		}
 
