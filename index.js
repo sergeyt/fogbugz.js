@@ -120,8 +120,13 @@ module.exports = function(options) {
 		}
 
 		function search(q, max) {
-			return cmd("search", "q", q, "max", max, "cols", convert.searchCols)
-					.then(convert.cases);
+			return cmd("search", "q", q, "max", max, "cols", convert.searchCols).then(convert.cases);
+		}
+
+		function caseInfo(id){
+			return search("ixBug:" + id).then(function(list){
+				return list.length === 0 ? null : list[0];
+			});
 		}
 
 		function events(id) {
@@ -250,6 +255,7 @@ module.exports = function(options) {
 			// list cases
 			search: search,
 			events: events,
+			caseInfo: caseInfo,
 
 			// editing cases
 			open: create,
