@@ -1,6 +1,7 @@
+// based on http://help.fogcreek.com/8202/xml-api
 (function(){
 
-	var extend, defer, promise;
+	var extend, defer, promise, request;
 	var env = 'browser';
 	if (typeof module !== 'undefined') {
 		env = 'node';
@@ -10,6 +11,7 @@
 
 	switch (env){
 		case 'node': {
+			request = require('request');
 			var Q = require('q');
 			extend = require('underscore').extend;
 			defer = Q.defer;
@@ -17,6 +19,7 @@
 		}
 		break;
 		case 'meteor': {
+			request = Npm.require('request');
 			var q = Npm.require('q');
 			extend = _.extend;
 			defer = q.defer;
@@ -29,13 +32,20 @@
 			promise = function(value){
 				return $.Deferred().resolve(value).promise();
 			};
+			// TODO ensure that body is string not document object
+			request = function(url, callback){
+				$.get(url).done(function(body, status, xhr){
+					callback(null, xhr.response, body);
+				}).fail(function(err){
+					callback(err, null, null);
+				});
+			};
 		}
 		break;
 	}
 
-	// based on http://help.fogcreek.com/8202/xml-api
-	var http = require('request'),
-			xml2js = require('xml2js');
+	// TODO isomorphic getting of XML from url and converting it to JSON
+	var xml2js = require('xml2js');
 
 	var log = false;
 
@@ -46,13 +56,12 @@
 		});
 	}
 
-	// TODO isomorphic getting of XML from url and converting it to JSON
 	function getUrl(url) {
 		log && console.log("GET %s", url);
 
 		var def = defer();
 
-		http.get(url, function(err, res, body) {
+		request(url, function(err, res, body) {
 			if (err) {
 				def.reject(err);
 			} else {
