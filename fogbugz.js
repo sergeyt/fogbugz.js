@@ -10,11 +10,10 @@
 
 	switch (env){
 		case 'node': {
-			var _ = require('underscore');
-			var q = require('q');
-			extend = _.extend;
-			defer = q.defer;
-			promise = q;
+			var Q = require('q');
+			extend = require('underscore').extend;
+			defer = Q.defer;
+			promise = Q;
 		}
 		break;
 		case 'meteor': {
