@@ -1,7 +1,7 @@
 // based on http://help.fogcreek.com/8202/xml-api
 (function(){
 
-	var extend, defer, promise, request;
+	var extend, defer, promise, request, xml2js;
 	var env = 'browser';
 	if (typeof module !== 'undefined') {
 		env = 'node';
@@ -12,6 +12,7 @@
 	switch (env){
 		case 'node': {
 			request = require('request');
+			xml2js = require('xml2js');
 			var Q = require('q');
 			extend = require('underscore').extend;
 			defer = Q.defer;
@@ -20,6 +21,7 @@
 		break;
 		case 'meteor': {
 			request = Npm.require('request');
+			xml2js = Npm.require('xml2js');
 			var q = Npm.require('q');
 			extend = _.extend;
 			defer = q.defer;
@@ -40,12 +42,10 @@
 					callback(err, null, null);
 				});
 			};
+			// TODO xml2js
 		}
 		break;
 	}
-
-	// TODO isomorphic getting of XML from url and converting it to JSON
-	var xml2js = require('xml2js');
 
 	var log = false;
 
