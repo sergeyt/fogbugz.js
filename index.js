@@ -25,10 +25,6 @@ var extend = {
 	}
 };
 
-function identity(x) {
-	return x;
-}
-
 function format(f) {
 	var args = [].slice.call(arguments, 1);
 	return f.replace(/\{(\d+)\}/g, function(match, i) {
