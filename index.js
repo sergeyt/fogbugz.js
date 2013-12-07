@@ -2,11 +2,28 @@
 var http = require('request'),
 		xml2js = require('xml2js'),
 		Q = require('q'),
-		convert = require('./lib/converters'),
-		extend = require('./lib/extenders'),
-		isarray = Array.isArray;
+		_ = require('underscore'),
+		convert = require('./lib/converters');
 
 var log = false;
+
+// extend functions for fogbugz objects
+var extend = {
+	milestone: function(fb) {
+		return function(it) {
+			return _.extend(it, {
+				cases: function() {
+					var q = "";
+					if (it.project && it.project.name){
+						q += 'project:"' + it.project.name + '" AND ';
+					}
+					q += 'fixfor:"' + it.name + '"';
+					return fb.search(q);
+				}
+			});
+		};
+	}
+};
 
 function identity(x) {
 	return x;
@@ -297,7 +314,7 @@ module.exports = function(options) {
 	}
 
 	return get("{0}cmd=logon&email={1}&password={2}", apiUrl, user, pwd).then(function(d) {
-		return client(isarray(d.token) ? d.token[0] : d.token);
+		return client(_.isArray(d.token) ? d.token[0] : d.token);
 	});
 };
 
