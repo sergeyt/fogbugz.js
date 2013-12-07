@@ -4,7 +4,7 @@ var http = require('request'),
 		Q = require('q'),
 		convert = require('./lib/converters'),
 		extend = require('./lib/extenders'),
-		isarray = require('isarray');
+		isarray = Array.isArray;
 
 var log = false;
 
