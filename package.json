@@ -3,7 +3,7 @@
   "version": "0.0.15",
   "description": "FogBugz client for nodejs.",
   "license": "MIT",
-  "main": "index.js",
+  "main": "fogbugz.js",
   "repository": {
     "type": "git",
     "url": "git@github.com:sergeyt/fogbugz.js.git"

@@ -1,6 +1,6 @@
 argv = require('optimist').argv
 Q = require('q')
-fb = require('../index')
+fb = require('../fogbugz')
 
 methods = [
 		'filters', 'projects', 'areas', 'milestones',

@@ -1,5 +1,5 @@
 fs = require('fs')
-fogbugz = require('../index')
+fogbugz = require('../fogbugz')
 read = require('read')
 askfor = require('askfor')
 Table = require('cli-table')
