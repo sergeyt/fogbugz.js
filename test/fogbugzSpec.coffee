@@ -1,6 +1,12 @@
-# TODO how to run in browser with undefined require (try karma-requirejs)
-fogbugz = require '../fogbugz'
-expect = require 'expect.js'
+fogbugz = null
+expect = null
+
+if typeof module != 'undefined'
+	fogbugz = require '../fogbugz'
+	expect = require 'expect.js'
+else
+	fogbugz = window.fogbugz
+	expect = window.expect
 
 Array.prototype.first = ->
 	f = this.filter(arguments[0])

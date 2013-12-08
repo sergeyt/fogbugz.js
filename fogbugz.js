@@ -698,7 +698,7 @@
 		FogBugz = {};
 		FogBugz.connect = fogbugz;
 	} else { // browser
-		window.FogBugz = fogbugz;
+		window.fogbugz = fogbugz;
 	}
 
 })();
