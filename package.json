@@ -48,10 +48,11 @@
     "grunt-cli": "~0.1.11",
     "mocha": "~1.15.1",
     "karma-mocha": "~0.1.1",
-    "expect.js": "~0.2.0"
+    "expect.js": "~0.2.0",
+    "grunt-simple-mocha": "~0.4.0"
   },
   "scripts": {
-  	"lint": "grunt lint",
-    "test": "npm run lint"
+    "lint": "grunt lint",
+    "test": "grunt test"
   }
 }
