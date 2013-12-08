@@ -1,6 +1,6 @@
 argv = require('optimist').argv
 Q = require('q')
-fb = require('../fogbugz')
+fb = require('fogbugz')
 
 methods = [
 		'filters', 'projects', 'areas', 'milestones',
@@ -22,5 +22,6 @@ p.fail printError
 p.done (client) ->
 	console.log('token:%s', client.token)
 	m = methods.filter((m) -> argv.hasOwnProperty(m))[0]
-	args = Object.keys(argv).filter((k) -> reserved.indexOf(k) < 0).map((k) -> argv[k])
+	argFilter = (k) -> reserved.indexOf(k) < 0
+	args = Object.keys(argv).filter(argFilter).map((k) -> argv[k])
 	client[m].apply(client, args).done(printAll)

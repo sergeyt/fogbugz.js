@@ -456,6 +456,12 @@
 			log = true;
 		}
 
+		// TODO if DEBUG only for testing purposes
+		// allow to replace request module for testing purposes
+		if (options.request){
+			request = options.request;
+		}
+
 		// normalize url
 		var apiUrl = options.url;
 		if (apiUrl.charAt(apiUrl.length - 1) !== '/') {

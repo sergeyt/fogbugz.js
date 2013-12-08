@@ -1,0 +1,1 @@
+coffee test.coffee --email="sergey.todyshev@grapecity.com" --pwd=st0dysh3v_gc %*
