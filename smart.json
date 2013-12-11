@@ -3,6 +3,6 @@
   "description": "FogBugz client",
   "homepage": "https://github.com/sergeyt/fogbugz",
   "author": "Sergey Todyshev",
-  "version": "0.0.1",
+  "version": "0.0.17",
   "git": "https://github.com/sergeyt/fogbugz.git"
 }
