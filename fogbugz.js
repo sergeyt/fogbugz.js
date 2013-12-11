@@ -42,7 +42,14 @@
 					callback(err, null, null);
 				});
 			};
-			// TODO xml2js
+			// requires jQuery-xml2json
+			xml2js = function(xml, cb) {
+				try {
+					cb(null, $.xml2json(xml));
+				} catch (err) {
+					cb(err, null);
+				}
+			};
 		}
 		break;
 	}
