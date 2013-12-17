@@ -3,6 +3,6 @@
   "description": "FogBugz client for nodejs, meteor and browser",
   "homepage": "https://github.com/sergeyt/fogbugz",
   "author": "Sergey Todyshev",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "git": "https://github.com/sergeyt/fogbugz.git"
 }
