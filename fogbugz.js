@@ -642,7 +642,13 @@
 				categories: list("Categories", convert.categories),
 				priorities: list("Priorities", convert.priorities),
 				statuses: list("Statuses", convert.statuses),
-				milestones: list("FixFors", convert.milestones, map(fn.milestone(fb))),
+				milestones: function(plain){
+					var p = list("FixFors", convert.milestones)();
+					if (!!plain){
+						return p;
+					}
+					return p.then(map(fn.milestone(fb)));
+				},
 				// TODO provide converters for below lists
 				mailboxes: list("Mailboxes"),
 				wikis: list("Wikis"),
