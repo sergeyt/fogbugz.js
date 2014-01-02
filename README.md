@@ -1,4 +1,4 @@
-# fogbugz.js [![Build Status][status]][statusurl] [![Deps Status][depstatus]][depstatusurl]
+# fogbugz.js [![NPM version](https://badge.fury.io/js/fogbugz.js.png)](http://badge.fury.io/js/fogbugz.js) [![Build Status][status]][statusurl] [![Deps Status][depstatus]][depstatusurl]
 
 [![NPM][npm]](https://nodei.co/npm/fogbugz.js/)
 
