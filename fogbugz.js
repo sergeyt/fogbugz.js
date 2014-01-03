@@ -1,7 +1,7 @@
 // based on http://help.fogcreek.com/8202/xml-api
 (function(){
 
-	var extend, defer, promise, request, xml2js;
+	var extend, defer, promise, request, xml2js, parallel;
 	var env = 'browser';
 	if (typeof module !== 'undefined') {
 		env = 'node';
@@ -17,6 +17,7 @@
 			extend = require('underscore').extend;
 			defer = Q.defer;
 			promise = Q;
+			parallel = require('async').parallel;
 		}
 		break;
 		case 'meteor': {
@@ -26,6 +27,7 @@
 			extend = _.extend;
 			defer = q.defer;
 			promise = q;
+			parallel = Npm.require('async').parallel;
 		}
 		break;
 		default: {
@@ -42,13 +44,33 @@
 					callback(err, null, null);
 				});
 			};
-			// requires jQuery-xml2json
+			// requires jQuery-xml2json to be included before fogbugz.js script
 			xml2js = function(xml, cb) {
 				try {
 					cb(null, $.xml2json(xml));
 				} catch (err) {
 					cb(err, null);
 				}
+			};
+			parallel = function(funcs, callback){
+				var count = 0;
+				var result = [];
+				var error = null;
+
+				function done(err,res){
+					count++;
+					result.push(res);
+					error = error || err;
+					if (count === funcs.length){
+						callback(error, result);
+					}
+				}
+
+				function run(fn){
+					fn(done);
+				}
+
+				funcs.forEach(run);
 			};
 		}
 		break;
@@ -61,6 +83,10 @@
 		return f.replace(/\{(\d+)\}/g, function(match, i) {
 			return typeof args[i] !== 'undefined' ? args[i] : "";
 		});
+	}
+
+	function defer_promise(d){
+		return typeof d.promise === 'function' ? d.promise() : d.promise;
 	}
 
 	function getUrl(url) {
@@ -77,7 +103,7 @@
 			}
 		});
 
-		return def.promise;
+		return defer_promise(def);
 	}
 
 	function parseXml(xml) {
@@ -93,7 +119,7 @@
 				def.resolve(obj.response);
 			}
 		});
-		return def.promise;
+		return defer_promise(def);
 	}
 
 	function get() {
@@ -363,7 +389,10 @@
 				'sLatestTextSummary',
 				'fOpen',
 				'tags',
-				'events',
+				// TODO provide a way to configure this behavior
+				// exclude events since fogbugz could fail with runtime error
+				// on large number of cases (e.g. large product backlog)
+				// 'events',
 				// dates
 				'dtOpened',
 				'dtResolved',
@@ -458,6 +487,7 @@
 			throw new Error("Required url option is not specified.");
 		}
 
+		// TODO verbose flag per client
 		// use only for dev purposes!
 		if (!!options.verbose){
 			log = true;
@@ -516,8 +546,35 @@
 				return get(url);
 			}
 
-			function search(q, max) {
-				return cmd("search", "q", q, "max", max, "cols", convert.searchCols).then(convert.cases);
+			function search(q, max, withoutEvents) {
+				return cmd("search", "q", q, "max", max, "cols", convert.searchCols)
+					.then(convert.cases)
+					.then(function(list){
+						if (withoutEvents){
+							return list;
+						}
+
+						function fetchFn(i){
+							var item = i;
+							return function(cb){
+								events(item.id).then(function(eventList){
+									item.events = eventList;
+									cb(null, item);
+									return item;
+								}).fail(function(err){
+									cb(err, null);
+								});
+							};
+						}
+
+						var d = defer();
+
+						parallel(list.map(fetchFn), function(){
+							d.resolve(list);
+						});
+
+						return defer_promise(d);
+					});
 			}
 
 			function caseInfo(id){

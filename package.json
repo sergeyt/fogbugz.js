@@ -21,7 +21,8 @@
     "xml2js": "~0.2.8",
     "q": "~0.9.7",
     "underscore": "~1.5.2",
-    "jquery-xml2json": "0.0.4"
+    "jquery-xml2json": "0.0.4",
+    "async": "~0.2.9"
   },
   "devDependencies": {
     "askfor": "0.0.2",
