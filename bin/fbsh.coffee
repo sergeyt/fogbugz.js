@@ -171,7 +171,7 @@ ms = (args) ->
 	return milestones().then printMilestones
 
 resolveMilestone = (id) ->
-	n = parseInt(id, 10);
+	n = parseInt(id, 10)
 	return milestones().then (list) ->
 		f = list.filter (m) -> m.id == n || m.name == id
 		return fb.milestone f[0] if f.length == 1
