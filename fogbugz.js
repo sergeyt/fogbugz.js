@@ -111,14 +111,14 @@
 
 	function parseXml(xml) {
 		var d = defer();
-		xml2js.parseString(xml, function(error, obj) {
-			if (error) {
-				log && console.log(error);
-				d.reject(error);
+		xml2js.parseString(xml, function(err, obj) {
+			if (err) {
+				log && console.log(err);
+				d.reject(err);
 			} else if (!obj.response) {
 				d.reject("unexpected response");
 			} else if (obj.response.error) {
-				var err = obj.response.error;
+				err = obj.response.error;
 				if (Array.isArray(err)) {
 					err = err[0];
 				}
@@ -168,7 +168,7 @@
 			var v = Array.isArray(val) ? val[0] : val;
 			if (/^f.+$/.test(key)) {
 				return bool(v);
-			} else if (/^i.+$/.test(key)) {
+			} else if (/^[in].+$/.test(key)) {
 				var i = parseInt(v, 10);
 				return isNaN(i) ? v : i;
 			} else if (/^dt.*$/.test(key)) {
@@ -238,15 +238,18 @@
 			id: 'ixPerson',
 			name: 'sFullName',
 			email: 'sEmail',
+			phone: 'sPhone',
 			admin: 'fAdministrator',
 			community: 'fCommunity',
 			virtual: 'fVirtual',
 			deleted: 'fDeleted',
 			notify: 'fNotify',
+			expert: 'fExpert',
 			homepage: 'sHomepage',
 			locale: 'sLocale',
 			language: 'sLanguage',
-			workingOn: 'ixBugWorkingOn'
+			workingOn: 'ixBugWorkingOn',
+			timeZoneKey: 'sTimeZoneKey'
 		});
 
 		var event = use({
@@ -280,8 +283,10 @@
 			filters: function(d) {
 				return getarr(d, 'filters', 'filter').map(function(it) {
 					return {
+						id: it.$.sFilter,
 						name: it._,
-						type: it.$.type
+						type: it.$.type,
+						status: it.$.status
 					};
 				});
 			},
@@ -326,10 +331,11 @@
 					id: 'ixCategory',
 					name: 'sCategory',
 					plural: 'sPlural',
-					defaultStatus: {
+					on: {
 						resolve: 'ixStatusDefault',
 						open: 'ixStatusDefaultActive'
-					}
+					},
+					isScheduleItem: 'fIsScheduleItem'
 				}));
 			},
 
@@ -706,6 +712,7 @@
 				filters: list("Filters", convert.filters),
 				projects: list("Projects", convert.projects),
 				people: list("People", convert.people),
+				users: list("People", convert.people),
 				areas: list("Areas", convert.areas),
 				categories: list("Categories", convert.categories),
 				priorities: list("Priorities", convert.priorities),
@@ -717,7 +724,7 @@
 					}
 					return p.then(map(fn.milestone(fb)));
 				},
-				// TODO provide converters for below lists
+				// TODO provide converters for lists below
 				mailboxes: list("Mailboxes"),
 				wikis: list("Wikis"),
 				templates: list("Templates"), // wiki templates
@@ -731,6 +738,7 @@
 				// editing cases
 				open: create,
 				"new": create,
+				create: create,
 				edit: edit,
 				assign: assign,
 				take: take,
@@ -772,14 +780,20 @@
 		});
 	}
 
-	// expose public api
-	if (env === 'node') {
-		module.exports = fogbugz;
-	} else if (env === 'meteor') {
-		FogBugz = {};
-		FogBugz.connect = fogbugz;
-	} else { // browser
-		window.fogbugz = fogbugz;
+	// expose public api for different environments
+	switch (env) {
+		case 'node':
+			module.exports = fogbugz;
+			break;
+		case 'meteor':
+			FogBugz = fogbugz;
+			// aliases
+			FogBugz.connect = fogbugz;
+			FogBugz.create = fogbugz;
+			break;
+		default:
+			window.fogbugz = fogbugz;
+			break;
 	}
 
 })();
