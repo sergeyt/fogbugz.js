@@ -94,34 +94,43 @@
 	function getUrl(url) {
 		log && console.log("GET %s", url);
 
-		var def = defer();
+		var d = defer();
 
 		request(url, function(err, res, body) {
 			if (err) {
-				def.reject(err);
+				log && console.log(err);
+				d.reject(err);
 			} else {
 				log && console.log(body);
-				def.resolve(body);
+				d.resolve(body);
 			}
 		});
 
-		return defer_promise(def);
+		return defer_promise(d);
 	}
 
 	function parseXml(xml) {
-		var def = defer();
+		var d = defer();
 		xml2js.parseString(xml, function(error, obj) {
 			if (error) {
-				def.reject(error);
+				log && console.log(error);
+				d.reject(error);
 			} else if (!obj.response) {
-				def.reject("unexpected response!");
+				d.reject("unexpected response");
 			} else if (obj.response.error) {
-				def.reject(obj.response.error[0]._);
+				var err = obj.response.error;
+				if (Array.isArray(err)) {
+					err = err[0];
+				}
+				if (err._) {
+					err = err._;
+				}
+				d.reject(err);
 			} else {
-				def.resolve(obj.response);
+				d.resolve(obj.response);
 			}
 		});
-		return defer_promise(def);
+		return defer_promise(d);
 	}
 
 	function get() {
@@ -159,7 +168,7 @@
 			var v = Array.isArray(val) ? val[0] : val;
 			if (/^f.+$/.test(key)) {
 				return bool(v);
-			} else if (/^ix.+$/.test(key)) {
+			} else if (/^i.+$/.test(key)) {
 				var i = parseInt(v, 10);
 				return isNaN(i) ? v : i;
 			} else if (/^dt.*$/.test(key)) {
