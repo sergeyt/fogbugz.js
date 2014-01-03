@@ -4,16 +4,22 @@ module.exports = function(config) {
 		basePath: '',
 
 		// frameworks to use
-		frameworks: ['jasmine'],
+		frameworks: ['mocha'],
 
 		preprocessors: {
 			'*.js': 'coverage',
-			'test/*.coffee': 'coffee',
+			'test/*.coffee': 'coffee'
 		},
 
 		// list of files / patterns to load in the browser
 		files: [
-			'index.js',
+			// TODO install jquery locally
+			'http://code.jquery.com/jquery-2.0.3.js',
+			'node_modules/jquery-xml2json/src/xml2json.js',
+			'node_modules/expect.js/expect.js',
+			'node_modules/underscore/underscore.js',
+			'karma-require.js',
+			'fogbugz.js',
 			'test/*.coffee'
 		],
 

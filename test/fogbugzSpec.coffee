@@ -1,16 +1,6 @@
-fogbugz = null
-expect = null
-
-if typeof module != 'undefined'
-	fogbugz = require '../fogbugz'
-	expect = require 'expect.js'
-else
-	fogbugz = window.fogbugz
-	expect = window.expect
-
-Array.prototype.first = ->
-	f = this.filter(arguments[0])
-	if f.length > 0 then f[0] else null
+fogbugz = require '../fogbugz'
+expect = require 'expect.js'
+_ = require 'underscore'
 
 endpoint = 'http://fb.com'
 
@@ -18,7 +8,7 @@ endpoint = 'http://fb.com'
 fakeRequest = ->
 	responses = []
 	req = (url, cb) ->
-		r = responses.first (x) ->
+		r = _.find responses, (x) ->
 			if typeof x[0] is 'function' and x[0](url) then true
 			else if x[0].test(url) then true
 			else false

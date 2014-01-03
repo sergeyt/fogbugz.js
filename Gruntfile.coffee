@@ -43,12 +43,18 @@ module.exports = (grunt) ->
 				reporter: 'spec'
 			all: src: ['test/*.coffee']
 
+		karma:
+			all:
+				configFile: 'karma.conf.js',
+				singleRun: true
+
 	grunt.loadNpmTasks 'grunt-contrib-jshint'
 	grunt.loadNpmTasks 'grunt-coffeelint'
 	grunt.loadNpmTasks 'grunt-npm'
 	grunt.loadNpmTasks 'grunt-bump'
 	grunt.loadNpmTasks 'grunt-auto-release'
 	grunt.loadNpmTasks 'grunt-simple-mocha'
+	grunt.loadNpmTasks 'grunt-karma'
 
 	grunt.registerTask 'release', 'Bump the version and publish to NPM.',
 		(type) -> grunt.task.run [
@@ -58,6 +64,6 @@ module.exports = (grunt) ->
 		]
 
 	grunt.registerTask 'lint', ['coffeelint', 'jshint']
-	grunt.registerTask 'test', ['lint', 'simplemocha']
+	grunt.registerTask 'test', ['lint', 'simplemocha', 'karma']
 	grunt.registerTask 'default', ['test']
 
