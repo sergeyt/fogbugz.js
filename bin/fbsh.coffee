@@ -31,6 +31,9 @@ help = ->
 			['ls c', 'list available case categories'],
 			['ls s', 'list available case statuses'],
 			['ls l', 'list available priorities'],
+			['ps', 'list available projects'],
+			['ms', 'list available milestones'],
+			['us', 'list available users'],
 			['u id', 'print user info'],
 			['search q', 'searches cases by specified q'],
 			['take #case [comment]', 'assign given case to logon user'],
@@ -64,6 +67,9 @@ run = (l) ->
 	switch cmd
 		when 'help' then do help
 		when 'ls' then ls args
+		when 'ps' then projects().then printProjects
+		when 'ms' then ms args
+		when 'us' then users().then printUsers
 		when 'search' then search args
 		when 'take' then take args
 		when 'resolve' then resolve args
@@ -116,6 +122,21 @@ start = (options, updateConfig, cb) ->
 		fb = client
 		cb()
 
+# returns memoized Fb method
+fbmemo = (method) ->
+	fn = null
+	->
+		fn = memo(fb[method]) unless fn != null
+		fn.apply fb, [].slice.call(arguments)
+
+filters = fbmemo('filters')
+projects = fbmemo('projects')
+users = fbmemo('people')
+milestones = fbmemo('milestones')
+categories = fbmemo('categories')
+statuses = fbmemo('statuses')
+priorities = fbmemo('priorities')
+
 # list command handler
 ls = (args) ->
 	switch args[1]
@@ -134,22 +155,6 @@ ls = (args) ->
 					caseObj = lastCases.filter((x) -> x.id == id)[0]
 					if caseObj then caseObj.events().then printEvents else done
 
-# returns memoized Fb method
-fbmemo = (method) ->
-		fn = null
-		->
-			if fn == null
-				fn = memo(fb[method])
-			fn.apply fb, [].slice.call(arguments)
-
-filters = fbmemo('filters')
-projects = fbmemo('projects')
-users = fbmemo('people')
-milestones = fbmemo('milestones')
-categories = fbmemo('categories')
-statuses = fbmemo('statuses')
-priorities = fbmemo('priorities')
-
 listActiveCases = ->
 	fb.search()
 		.then(filterActiveCases)
@@ -159,6 +164,19 @@ listActiveCases = ->
 # TODO do not hardcode active status
 filterActiveCases = (list) -> list.filter (x) -> x.status.id == 1
 
+# listing milestone
+ms = (args) ->
+	if args.length >= 2
+		return resolveMilestone(args[1]).then (m) -> m.cases().then(printCases)
+	return milestones().then printMilestones
+
+resolveMilestone = (id) ->
+	n = parseInt(id, 10);
+	return milestones().then (list) ->
+		f = list.filter (m) -> m.id == n || m.name == id
+		return fb.milestone f[0] if f.length == 1
+		return {cases: -> Q []}
+
 # search command handler
 search = (args) ->
 	# TODO intelligent search
@@ -166,8 +184,7 @@ search = (args) ->
 
 workflowFile = __dirname + '/workflow.json'
 workflow = ->
-	if fs.existsSync workflowFile
-		return require workflowFile
+	return require workflowFile if fs.existsSync workflowFile
 	return {}
 
 # take command handler
@@ -179,7 +196,7 @@ parseArgs1 = (args) ->
 	comment = args[2] || ''
 	if isNaN id
 		comment = args[1]
-		if !currentCase then return Q.reject('no taken case')
+		return Q.reject('no taken case') if !currentCase
 		id = currentCase
 	return Q({id: id, comment: comment})
 
@@ -206,7 +223,7 @@ reopen = (args) ->
 # assign command handler
 assign = (args) ->
 	cid = parseInt(args[1])
-	if isNaN cid then return error('expected case number')
+	return error('expected case number') if isNaN cid
 	resolveUser(args[2]).then (u) ->
 		fb.assign cid, u.id, args[3]
 
@@ -220,10 +237,8 @@ kick = (args) ->
 resolveUser = (id) ->
 	if !id then return error('user id is not specified')
 	users().then (list) ->
-		if iz.email(id)
-			return (list.filter (u) -> u.email.indexOf(id) >= 0)[0]
-		if iz.int(id)
-			return (list.filter (u) -> u.id == id)[0]
+		return (list.filter (u) -> u.email.indexOf(id) >= 0)[0] if iz.email(id)
+		return (list.filter (u) -> u.id == id)[0] if iz.int(id)
 		id = id.toLowerCase()
 		return (list.filter (u) ->
 			u.name.toLowerCase() == id || shortName(u).toLowerCase() == id)[0]
@@ -246,7 +261,9 @@ error = (msg) ->
 	console.log msg
 	done
 
-unwrap = (x) -> if x.id && x.name then x.name else x
+unwrap = (x) ->
+	if x.id && x.name then x.name
+	else if typeof x is 'string' then x else JSON.stringify(x)
 
 printTable = (list, keys) ->
 	list = list.filter (x) -> x != null and x != undefined
@@ -281,12 +298,12 @@ printEvents = (list) ->
 	print lines.join '\n'
 
 shortName = (user) ->
-	if !user || !user.name then return ''
+	return '' if !user || !user.name
 	arr = user.name.split(' ')
-	if arr[0].length <= 2 then return user.name
-	if arr.length <= 1 then user.name else arr[0] + arr[1].substr(0, 1)
+	return user.name if arr.length <= 1 || arr[0].length <= 2
+	return arr[0] + arr[1].substr(0, 1)
 
 ago = (d) -> require('pretty-date').format(d)
 
-main = -> auth repl
-do main
+# run the shell
+auth repl
