@@ -45,11 +45,13 @@
 				});
 			};
 			// requires jQuery-xml2json to be included before fogbugz.js script
-			xml2js = function(xml, cb) {
-				try {
-					cb(null, $.xml2json(xml));
-				} catch (err) {
-					cb(err, null);
+			xml2js = {
+				parseString: function(xml, cb) {
+					try {
+						cb(null, $.xml2json(xml));
+					} catch (err) {
+						cb(err, null);
+					}
 				}
 			};
 			parallel = function(funcs, callback){
