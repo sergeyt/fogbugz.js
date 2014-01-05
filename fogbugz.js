@@ -26,7 +26,7 @@
 			request = Npm.require('request');
 			xml2js = Npm.require('xml2js');
 			var q = Npm.require('q');
-			extend = _.extend;
+			extend = Npm.require('underscore').extend;
 			defer = q.defer;
 			promise = q;
 			parallel = Npm.require('async').parallel;
