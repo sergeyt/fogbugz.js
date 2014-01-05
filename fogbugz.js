@@ -11,6 +11,7 @@
 
 	switch (env){
 		case 'node': {
+			console.log('fogbugz.js: running in node environment');
 			request = require('request');
 			xml2js = require('xml2js');
 			var Q = require('q');
@@ -21,6 +22,7 @@
 		}
 		break;
 		case 'meteor': {
+			console.log('fogbugz.js: running in meteor environment');
 			request = Npm.require('request');
 			xml2js = Npm.require('xml2js');
 			var q = Npm.require('q');
@@ -31,6 +33,7 @@
 		}
 		break;
 		default: {
+			console.log('fogbugz.js: running in browser environment');
 			extend = $.extend;
 			defer = $.Deferred;
 			promise = function(value){
