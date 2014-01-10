@@ -31,7 +31,7 @@
     "memoizee": "~0.2.6",
     "iz": "~0.3.0",
     "pretty-date": "~0.1.1",
-    "node-more": "0.0.2",
+    "node-more": "0.0.3",
     "grunt": "~0.4.1",
     "grunt-contrib-jshint": "~0.7.1",
     "grunt-coffeelint": "0.0.7",
