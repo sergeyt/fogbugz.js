@@ -3,7 +3,7 @@ Package.describe({
 });
 
 Npm.depends({
-	"request": "2.31.0",
+	"request": "2.33.0",
 	"xml2js": "0.4.1",
 	"q": "1.0.0",
 	"underscore": "1.5.2",
