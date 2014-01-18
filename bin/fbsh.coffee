@@ -35,6 +35,7 @@ help = ->
 			['ms', 'list available milestones'],
 			['us', 'list available users'],
 			['u id', 'print user info'],
+			['settings', 'prints user settings'],
 			['search q', 'searches cases by specified q'],
 			['take #case [comment]', 'assign given case to logon user'],
 			['resolve [#case] [comment]', 'resolves current or given case']
@@ -79,6 +80,10 @@ run = (l) ->
 		when 'kick' then kick args
 		when 'log' then log args
 		when 'u' then resolveUser(args[1]).then((x) -> [x]).then(printUsers)
+		# todo pretty printing of user settings
+		when 'settings'
+			fb.userSettings().then (settings) ->
+				printTable [settings]
 		when 'q' then process.exit 0
 		when 'quit' then process.exit 0
 		when 'exit' then process.exit 0
