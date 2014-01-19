@@ -268,7 +268,22 @@
 			format: 'sFormat',
 			text: 's',
 			changes: 'sChanges',
-			html: 'sHTML',
+			html: function(it){
+				var val = it.sHTML || it.sHtml;
+				if (!val) {
+					return undefined;
+				}
+				if (Array.isArray(val)){
+					val = val[0];
+				}
+				if (typeof val === 'string'){
+					return val;
+				}
+				if (typeof val._ === 'string'){
+					return val._;
+				}
+				return undefined;
+			},
 			isHtml: 'fHTML',
 			isExternal: 'fExternal',
 			isEmail: 'fEmail',

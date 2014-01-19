@@ -158,7 +158,7 @@ ls = (args) ->
 					listActiveCases()
 			else
 					caseObj = lastCases.filter((x) -> x.id == id)[0]
-					if caseObj then caseObj.events().then printEvents else done
+					if caseObj then fb.events(caseObj.id).then printEvents else done
 
 listActiveCases = ->
 	fb.search()
