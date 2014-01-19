@@ -268,7 +268,10 @@
 			format: 'sFormat',
 			text: 's',
 			changes: 'sChanges',
-			html: 'sHtml',
+			html: 'sHTML',
+			isHtml: 'fHTML',
+			isExternal: 'fExternal',
+			isEmail: 'fEmail',
 			message: {
 				from: 'sFrom',
 				to: 'sTo',
@@ -396,6 +399,8 @@
 				'ixPersonResolvedBy',
 				'ixBugParent',
 				'ixBugChildren',
+				'ixBugDuplicates',
+				'ixBugOriginal',
 				'sTitle',
 				'ixPriority',
 				'sPriority',
@@ -409,6 +414,11 @@
 				'sLatestTextSummary',
 				'fOpen',
 				'tags',
+				'ixProject',
+				'sProject',
+				'ixArea',
+				'sArea',
+				'fSubscribed',
 				// TODO provide a way to configure this behavior
 				// exclude events since fogbugz could fail with runtime error
 				// on large number of cases (e.g. large product backlog)
@@ -445,7 +455,9 @@
 						id: 'ixPersonResolvedBy'
 					},
 					parentId: 'ixBugParent',
+					originalId: 'ixBugOriginal',
 					children: 'ixBugChildren',
+					duplicates: 'ixBugDuplicates',
 					title: 'sTitle',
 					priority: {
 						id: 'ixPriority',
@@ -454,6 +466,14 @@
 					category: {
 						id: 'ixCategory',
 						name: 'sCategory'
+					},
+					project: {
+						id: 'ixProject',
+						name: 'sProject'
+					},
+					area: {
+						id: 'ixArea',
+						name: 'sArea'
 					},
 					milestone: {
 						id: 'ixFixFor',
@@ -465,6 +485,7 @@
 					ticket: 'sTicket',
 					latestSummary: 'sLatestTextSummary',
 					isOpen: 'fOpen',
+					isSubscribed: 'fSubscribed',
 					tags: 'tags.tag[]',
 					events: function(it) {
 						return getarr(it, 'events', 'event').map(event);
