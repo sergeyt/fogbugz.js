@@ -1,6 +1,6 @@
 {
   "name": "fogbugz.js",
-  "version": "0.0.30",
+  "version": "0.0.31",
   "main": "fogbugz.js",
   "maintainers": [{
     "name": "Sergey Todyshev",
