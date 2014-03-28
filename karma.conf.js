@@ -16,7 +16,7 @@ module.exports = function(config) {
 			// TODO install jquery locally
 			'http://code.jquery.com/jquery-2.0.3.js',
 			'node_modules/jquery-xml2json/src/xml2json.js',
-			'node_modules/expect.js/expect.js',
+			'node_modules/expect.js/index.js',
 			'node_modules/underscore/underscore.js',
 			'karma-require.js',
 			'fogbugz.js',
