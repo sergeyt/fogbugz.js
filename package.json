@@ -17,7 +17,7 @@
     "Sergey Todyshev <stodyshev@gmail.com>"
   ],
   "dependencies": {
-    "request": "~2.34",
+    "request": "~2.36",
     "xml2js": "~0.4",
     "q": "~1.0",
     "underscore": "~1.6",
@@ -25,16 +25,16 @@
     "async": "~0.2"
   },
   "devDependencies": {
-    "askfor": "0.0.2",
+    "askfor": "0.0.3",
     "read": "~1.0",
     "cli-table": "~0.3.0",
-    "memoizee": "~0.2.6",
+    "memoizee": "~0.3",
     "iz": "~0.4",
     "pretty-date": "~0.2.0",
     "node-more": "0.0.4",
     "grunt": "~0.4",
-    "grunt-contrib-jshint": "~0.9",
-    "grunt-coffeelint": "~0.0.8",
+    "grunt-contrib-jshint": "~0.10",
+    "grunt-coffeelint": "~0.0.10",
     "grunt-npm": "~0.0.2",
     "grunt-bump": "~0.0.13",
     "grunt-auto-release": "~0.0.6",
@@ -52,7 +52,7 @@
     "karma-phantomjs-launcher": "~0.1",
     "karma-mocha": "~0.1",
     "optimist": "~0.6",
-    "mocha": "~1.18",
+    "mocha": "~1.20",
     "expect.js": "~0.3"
   },
   "scripts": {
