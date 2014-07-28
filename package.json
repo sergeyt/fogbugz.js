@@ -17,11 +17,11 @@
     "Sergey Todyshev <stodyshev@gmail.com>"
   ],
   "dependencies": {
-    "request": "~2.36",
+    "request": "~2.39",
     "xml2js": "~0.4",
     "q": "~1.0",
     "underscore": "~1.6",
-    "jquery-xml2json": "0.0.5",
+    "jquery-xml2json": "0.0.6",
     "async": "~0.2"
   },
   "devDependencies": {
@@ -52,7 +52,7 @@
     "karma-phantomjs-launcher": "~0.1",
     "karma-mocha": "~0.1",
     "optimist": "~0.6",
-    "mocha": "~1.20",
+    "mocha": "~1.21",
     "expect.js": "~0.3"
   },
   "scripts": {
