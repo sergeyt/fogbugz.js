@@ -19,7 +19,7 @@ Package.onUse(function(api) {
   api.versionsFrom('METEOR@0.9.1');
   api.use('underscore', anywhere);
   api.use('jquery', client);
-  api.use('jquery-xml2json', client);
+  api.use('sergeyt:jquery-xml2json', client);
   api.export('FogBugz');
   api.addFiles('fogbugz.js', anywhere);
 });
