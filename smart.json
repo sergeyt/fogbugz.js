@@ -1,8 +1,8 @@
 {
-  "name": "fogbugz",
+  "name": "sergeyt:fogbugz",
   "description": "FogBugz client for nodejs, meteor and browser",
-  "homepage": "https://github.com/sergeyt/fogbugz",
+  "homepage": "https://github.com/sergeyt/fogbugz.js",
   "author": "Sergey Todyshev",
-  "version": "0.0.31",
-  "git": "https://github.com/sergeyt/fogbugz.git"
+  "version": "0.0.32",
+  "git": "https://github.com/sergeyt/fogbugz.js.git"
 }
