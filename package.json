@@ -17,10 +17,10 @@
     "Sergey Todyshev <stodyshev@gmail.com>"
   ],
   "dependencies": {
-    "request": "~2.40",
+    "request": "~2.44",
     "xml2js": "~0.4",
     "q": "~1.0",
-    "underscore": "~1.6",
+    "underscore": "~1.7",
     "jquery-xml2json": "0.0.6",
     "async": "~0.2"
   },
@@ -29,7 +29,7 @@
     "read": "~1.0",
     "cli-table": "~0.3.0",
     "memoizee": "~0.3",
-    "iz": "~0.5",
+    "iz": "~0.6",
     "pretty-date": "~0.2.0",
     "node-more": "0.0.4",
     "grunt": "~0.4",
@@ -38,7 +38,7 @@
     "grunt-npm": "~0.0.2",
     "grunt-bump": "~0.0.13",
     "grunt-auto-release": "~0.0.6",
-    "grunt-karma": "~0.8",
+    "grunt-karma": "~0.9",
     "grunt-cli": "~0.1",
     "grunt-simple-mocha": "~0.4",
     "grunt-karma-coveralls": "~2.5",
