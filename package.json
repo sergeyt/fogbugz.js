@@ -17,7 +17,7 @@
     "Sergey Todyshev <stodyshev@gmail.com>"
   ],
   "dependencies": {
-    "request": "~2.44",
+    "request": "~2.51",
     "xml2js": "~0.4",
     "q": "~1.0",
     "underscore": "~1.7",
