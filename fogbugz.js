@@ -474,7 +474,9 @@
 					},
 					parentId: 'ixBugParent',
 					originalId: 'ixBugOriginal',
-					children: 'ixBugChildren',
+					children: function(it){
+						return it.ixBugChildren
+					},
 					duplicates: 'ixBugDuplicates',
 					title: 'sTitle',
 					priority: {
