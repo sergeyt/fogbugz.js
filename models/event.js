@@ -43,7 +43,10 @@ function EventSchema(customFields) {
       date: 'sDate',
       bodyText: 'sBodyText',
       bodyHTML: 'sBodyHTML'
-    }
+    },
+    attachments: function(it){ 
+        return it.rgAttachments[0].attachment || [];
+      }
   }
 }
 

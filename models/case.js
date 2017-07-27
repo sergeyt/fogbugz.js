@@ -28,7 +28,7 @@ function CaseSchema(customFields) {
     parentId: 'ixBugParent',
     originalId: 'ixBugOriginal',
     children: function(it) {
-      return it.ixBugChildren
+      return it.ixBugChildren[0].length ? it.ixBugChildren[0].split(',') : []
     },
     duplicates: 'ixBugDuplicates',
     title: 'sTitle',
