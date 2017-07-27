@@ -1,6 +1,5 @@
 // based on http://help.fogcreek.com/8202/xml-api
 (function(){
-
 	var extend, defer, promise, request, xml2js, parallel;
 	var env = 'browser';
 	if (typeof module !== 'undefined') {
@@ -12,13 +11,15 @@
 	switch (env){
 		case 'node': {
 			console.log('fogbugz.js: running in node environment');
-			request = require('request');
-			xml2js = require('xml2js');
+			var request = require('request');
+			var Utils = require('./utils.js');
+			var {Person, Case} = require('./models');
+			var xml2js = require('xml2js');
 			var Q = require('q');
-			extend = require('underscore').extend;
-			defer = Q.defer;
-			promise = Q;
-			parallel = require('async').parallel;
+			var extend = require('underscore').extend;
+			var defer = Q.defer;
+			var promise = Q;
+			var parallel = require('async').parallel;
 		}
 		break;
 		case 'meteor': {
@@ -142,26 +143,48 @@
 	}
 
 	// converters from FogBugz XMLJS payloads to plain JS objects
+	let customFields = [];
+	let searchCols = [
+		'ixBug',
+		'ixStatus',
+		'sStatus',
+		'ixPersonAssignedTo',
+		'sPersonAssignedTo',
+		'sEmailAssignedTo',
+		'ixPersonOpenedBy',
+		'ixPersonResolvedBy',
+		'ixBugParent',
+		'ixBugChildren',
+		'ixBugDuplicates',
+		'ixBugOriginal',
+		'sTitle',
+		'ixPriority',
+		'sPriority',
+		'ixCategory',
+		'sCategory',
+		'ixFixFor',
+		'sFixFor',
+		'sVersion',
+		'sComputer',
+		'sTicket',
+		'sLatestTextSummary',
+		'fOpen',
+		'tags',
+		'ixProject',
+		'sProject',
+		'ixArea',
+		'sArea',
+		'fSubscribed',
+		'dblStoryPts',
+		'sReleaseNotes',
+		'dtOpened',
+		'dtResolved',
+		'dtClosed',
+		'dtDue',
+		'dtFixFor'
+	];
 
 	var convert = (function(){
-
-		// resolves xmljs array
-		function getarr(d) {
-			var arr = [d];
-			for (var i = 1; i < arguments.length; i++) {
-				var p = arguments[i];
-				var v = arr[0][p];
-				if (v === null || v === undefined) {
-					return [];
-				}
-				arr = Array.isArray(v) ? v : [v];
-				if (arr.length === 0) {
-					return [];
-				}
-			}
-			return arr;
-		}
-
 		function bool(x) {
 			return typeof x === "string" ? x.toLowerCase() === 'true' : !!x;
 		}
@@ -237,23 +260,7 @@
 			};
 		}
 
-		var person = use({
-			id: 'ixPerson',
-			name: 'sFullName',
-			email: 'sEmail',
-			phone: 'sPhone',
-			admin: 'fAdministrator',
-			community: 'fCommunity',
-			virtual: 'fVirtual',
-			deleted: 'fDeleted',
-			notify: 'fNotify',
-			expert: 'fExpert',
-			homepage: 'sHomepage',
-			locale: 'sLocale',
-			language: 'sLanguage',
-			workingOn: 'ixBugWorkingOn',
-			timeZoneKey: 'sTimeZoneKey'
-		});
+		var person = new Person();;
 
 		var event = use({
 			id: 'ixBugEvent',
@@ -297,15 +304,12 @@
 				date: 'sDate',
 				bodyText: 'sBodyText',
 				bodyHTML: 'sBodyHTML'
-			},
-			attachments: function(it){ 
-				return it.rgAttachments[0].attachment || [];
 			}
 		});
 
 		return {
 			filters: function(d) {
-				return getarr(d, 'filters', 'filter').map(function(it) {
+				return Utils.getarr(d, 'filters', 'filter').map(function(it) {
 					return {
 						id: it.$.sFilter,
 						name: it._,
@@ -316,7 +320,7 @@
 			},
 
 			projects: function(d) {
-				return getarr(d, 'projects', 'project').map(use({
+				return Utils.getarr(d, 'projects', 'project').map(use({
 					id: 'ixProject',
 					name: 'sProject',
 					owner: {
@@ -334,7 +338,7 @@
 			},
 
 			areas: function(d) {
-				return getarr(d, 'areas', 'area').map(use({
+				return Utils.getarr(d, 'areas', 'area').map(use({
 					id: 'ixArea',
 					name: 'sArea',
 					project: {
@@ -351,7 +355,7 @@
 			},
 
 			categories: function(d) {
-				return getarr(d, 'categories', 'category').map(use({
+				return Utils.getarr(d, 'categories', 'category').map(use({
 					id: 'ixCategory',
 					name: 'sCategory',
 					plural: 'sPlural',
@@ -364,7 +368,7 @@
 			},
 
 			priorities: function(d) {
-				return getarr(d, 'priorities', 'priority').map(use({
+				return Utils.getarr(d, 'priorities', 'priority').map(use({
 					id: 'ixPriority',
 					name: 'sPriority',
 					isDefault: 'fDefault'
@@ -372,7 +376,7 @@
 			},
 
 			statuses: function(d) {
-				return getarr(d, 'statuses', 'status').map(use({
+				return Utils.getarr(d, 'statuses', 'status').map(use({
 					id: 'ixStatus',
 					name: 'sStatus',
 					category: 'ixCategory',
@@ -385,7 +389,7 @@
 			},
 
 			milestones: function(d) {
-				return getarr(d, 'fixfors', 'fixfor').map(use({
+				return Utils.getarr(d, 'fixfors', 'fixfor').map(use({
 					id: 'ixFixFor',
 					name: 'sFixFor',
 					project: {
@@ -400,121 +404,20 @@
 			},
 
 			person: function(d) {
-				return getarr(d, 'person').map(person)[0];
+				return Utils.getarr(d, 'person').map(person)[0];
 			},
 			people: function(d) {
-				return getarr(d, 'people', 'person').map(person);
+				return Utils.getarr(d, 'people', 'person').map(person);
 			},
-
-			searchCols: [
-				'ixBug',
-				'ixStatus',
-				'sStatus',
-				'ixPersonAssignedTo',
-				'sPersonAssignedTo',
-				'sEmailAssignedTo',
-				'ixPersonOpenedBy',
-				'ixPersonResolvedBy',
-				'ixBugParent',
-				'ixBugChildren',
-				'ixBugDuplicates',
-				'ixBugOriginal',
-				'sTitle',
-				'ixPriority',
-				'sPriority',
-				'ixCategory',
-				'sCategory',
-				'ixFixFor',
-				'sFixFor',
-				'sVersion',
-				'sComputer',
-				'sTicket',
-				'sLatestTextSummary',
-				'fOpen',
-				'tags',
-				'ixProject',
-				'sProject',
-				'ixArea',
-				'sArea',
-				'fSubscribed',
-				// TODO provide a way to configure this behavior
-				// exclude events since fogbugz could fail with runtime error
-				// on large number of cases (e.g. large product backlog)
-				// 'events',
-				// dates
-				'dtOpened',
-				'dtResolved',
-				'dtClosed',
-				'dtDue',
-				'dtFixFor'
-			].join(','),
-
 			cases: function(d) {
-				return getarr(d, 'cases', 'case').map(use({
-					id: 'ixBug',
-					status: {
-						id: 'ixStatus',
-						name: 'sStatus'
-					},
-					operations: '$.operations',
-					opened: 'dtOpened',
-					resolved: 'dtResolved',
-					closed: 'dtClosed',
-					due: 'dtDue',
-					assignee: {
-						id: 'ixPersonAssignedTo',
-						name: 'sPersonAssignedTo',
-						email: 'sEmailAssignedTo'
-					},
-					openedBy: {
-						id: 'ixPersonOpenedBy'
-					},
-					resolvedBy: {
-						id: 'ixPersonResolvedBy'
-					},
-					parentId: 'ixBugParent',
-					originalId: 'ixBugOriginal',
-					children: function(it){
-						return it.ixBugChildren
-					},
-					duplicates: 'ixBugDuplicates',
-					title: 'sTitle',
-					priority: {
-						id: 'ixPriority',
-						name: 'sPriority'
-					},
-					category: {
-						id: 'ixCategory',
-						name: 'sCategory'
-					},
-					project: {
-						id: 'ixProject',
-						name: 'sProject'
-					},
-					area: {
-						id: 'ixArea',
-						name: 'sArea'
-					},
-					milestone: {
-						id: 'ixFixFor',
-						name: 'sFixFor',
-						end: 'dtFixFor'
-					},
-					version: 'sVersion',
-					computer: 'sComputer',
-					ticket: 'sTicket',
-					latestSummary: 'sLatestTextSummary',
-					isOpen: 'fOpen',
-					isSubscribed: 'fSubscribed',
-					tags: 'tags.tag[]',
-					events: function(it) {
-						return getarr(it, 'events', 'event').map(event);
-					}
-				}));
+				console.log(d.cases[0]);
+				var a =  Utils.getarr(d, 'cases', 'case').map(new Case(customFields));
+				console.log(a);
+				return a;
 			},
 
 			events: function(d) {
-				return getarr(d, 'cases', 'case', 'events', 'event').map(event);
+				return Utils.getarr(d, 'cases', 'case', 'events', 'event').map(event);
 			}
 		};
 	})();
@@ -537,15 +440,19 @@
 		}
 	};
 
-	// TODO verify api token
 	// creates new client with specified options
 	function fogbugz(options) {
-
 		if (!options) {
 			throw new Error("Options are not specified.");
 		}
+
 		if (!options.url || typeof options.url !== "string") {
 			throw new Error("Required url option is not specified.");
+		}
+
+		if(options.customFields){
+			customFields = customFields.concat(options.customFields);
+			searchCols = searchCols.concat(options.customFields);
 		}
 
 		// TODO verbose flag per client
@@ -613,7 +520,7 @@
 
 			// runs search command
 			function search(q, max, withoutEvents) {
-				return cmd("search", "q", q, "max", max, "cols", convert.searchCols)
+				return cmd("search", "q", q, "max", max, "cols", searchCols)
 					.then(convert.cases)
 					.then(function(list){
 						if (withoutEvents){
@@ -946,9 +853,11 @@
 		// login then create client
 		var user = options.email || options.user;
 		var pwd = options.password || options.pwd;
+		
 		if (!user || typeof user !== "string") {
 			throw new Error("Required email option is not specified.");
 		}
+		
 		if (!pwd || typeof pwd !== "string") {
 			throw new Error("Required password option is not specified.");
 		}

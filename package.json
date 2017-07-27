@@ -1,63 +1,98 @@
 {
-  "name": "fogbugz.js",
-  "version": "0.0.33",
-  "description": "FogBugz client for nodejs.",
-  "license": "MIT",
-  "main": "fogbugz.js",
-  "repository": {
-    "type": "git",
-    "url": "git@github.com:sergeyt/fogbugz.js.git"
+  "_from": "fogbugz.js@0.0.33",
+  "_id": "fogbugz.js@0.0.33",
+  "_inBundle": false,
+  "_integrity": "sha1-m1QJZ1Ld3HAtCn+vWrtdZjagXxw=",
+  "_location": "/fogbugz.js",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "version",
+    "registry": true,
+    "raw": "fogbugz.js@0.0.33",
+    "name": "fogbugz.js",
+    "escapedName": "fogbugz.js",
+    "rawSpec": "0.0.33",
+    "saveSpec": null,
+    "fetchSpec": "0.0.33"
   },
+  "_requiredBy": [
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/fogbugz.js/-/fogbugz.js-0.0.33.tgz",
+  "_shasum": "9b54096752dddc702d0a7faf5abb5d6636a05f1c",
+  "_spec": "fogbugz.js@0.0.33",
+  "_where": "/home/hyde/Projects/fogbugz-to-gitlab",
+  "author": {
+    "name": "Sergey Todyshev",
+    "email": "stodyshev@gmail.com"
+  },
+  "bugs": {
+    "url": "https://github.com/sergeyt/fogbugz.js/issues"
+  },
+  "bundleDependencies": false,
+  "contributors": [
+    {
+      "name": "Sergey Todyshev",
+      "email": "stodyshev@gmail.com"
+    }
+  ],
+  "dependencies": {
+    "async": "~0.2",
+    "jquery-xml2json": "0.0.8",
+    "q": "~1.0",
+    "request": "~2.44",
+    "underscore": "~1.7",
+    "xml2js": "~0.4"
+  },
+  "deprecated": false,
+  "description": "FogBugz client for nodejs.",
+  "devDependencies": {
+    "askfor": "0.0.3",
+    "cli-table": "~0.3.0",
+    "expect.js": "~0.3",
+    "grunt": "~0.4",
+    "grunt-auto-release": "~0.0.6",
+    "grunt-bump": "~0.0.13",
+    "grunt-cli": "~0.1",
+    "grunt-coffeelint": "~0.0.10",
+    "grunt-contrib-jshint": "~0.10",
+    "grunt-karma": "~0.9",
+    "grunt-karma-coveralls": "~2.5",
+    "grunt-npm": "~0.0.2",
+    "grunt-simple-mocha": "~0.4",
+    "iz": "~0.6",
+    "karma": "~0.12",
+    "karma-chrome-launcher": "~0.1",
+    "karma-coffee-preprocessor": "~0.2",
+    "karma-coverage": "~0.2",
+    "karma-firefox-launcher": "~0.1",
+    "karma-jasmine": "~0.1",
+    "karma-mocha": "~0.1",
+    "karma-phantomjs-launcher": "~0.1",
+    "karma-script-launcher": "~0.1",
+    "memoizee": "~0.3",
+    "mocha": "~1.21",
+    "node-more": "0.0.4",
+    "optimist": "~0.6",
+    "pretty-date": "~0.2.0",
+    "read": "~1.0"
+  },
+  "homepage": "https://github.com/sergeyt/fogbugz.js#readme",
   "keywords": [
     "fogbugz",
     "client"
   ],
-  "author": "Sergey Todyshev <stodyshev@gmail.com>",
-  "contributors": [
-    "Sergey Todyshev <stodyshev@gmail.com>"
-  ],
-  "dependencies": {
-    "request": "~2.51",
-    "xml2js": "~0.4",
-    "q": "~1.0",
-    "underscore": "~1.7",
-    "jquery-xml2json": "0.0.8",
-    "async": "~0.2"
-  },
-  "devDependencies": {
-    "askfor": "0.0.3",
-    "read": "~1.0",
-    "cli-table": "~0.3.0",
-    "memoizee": "~0.3",
-    "iz": "~0.6",
-    "pretty-date": "~0.2.0",
-    "node-more": "0.0.4",
-    "grunt": "~0.4",
-    "grunt-contrib-jshint": "~0.10",
-    "grunt-coffeelint": "~0.0.10",
-    "grunt-npm": "~0.0.2",
-    "grunt-bump": "~0.0.13",
-    "grunt-auto-release": "~0.0.6",
-    "grunt-karma": "~0.9",
-    "grunt-cli": "~0.1",
-    "grunt-simple-mocha": "~0.4",
-    "grunt-karma-coveralls": "~2.5",
-    "karma": "~0.12",
-    "karma-coverage": "~0.2",
-    "karma-script-launcher": "~0.1",
-    "karma-chrome-launcher": "~0.1",
-    "karma-firefox-launcher": "~0.1",
-    "karma-jasmine": "~0.1",
-    "karma-coffee-preprocessor": "~0.2",
-    "karma-phantomjs-launcher": "~0.1",
-    "karma-mocha": "~0.1",
-    "optimist": "~0.6",
-    "mocha": "~1.21",
-    "expect.js": "~0.3"
+  "license": "MIT",
+  "main": "fogbugz.js",
+  "name": "fogbugz.js",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/sergeyt/fogbugz.js.git"
   },
   "scripts": {
+    "drone": "grunt drone",
     "lint": "grunt lint",
-    "test": "grunt test",
-    "drone": "grunt drone"
-  }
+    "test": "grunt test"
+  },
+  "version": "0.0.33"
 }
