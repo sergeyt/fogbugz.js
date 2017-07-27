@@ -1,4 +1,5 @@
 const Base = require('./base');
+const Utils = require('../utils');
 
 function EventSchema(customFields) {
   return {
@@ -44,9 +45,14 @@ function EventSchema(customFields) {
       bodyText: 'sBodyText',
       bodyHTML: 'sBodyHTML'
     },
-    attachments: function(it){ 
-        return it.rgAttachments[0].attachment || [];
-      }
+    attachments: function(it) {
+      return Utils.getarr(it, 'rgAttachments', 'attachment').map((item) => {
+        return {
+          fileName: item.sFileName[0],
+          url: item.sURL[0]   
+        }
+      }) || []
+    }
   }
 }
 
