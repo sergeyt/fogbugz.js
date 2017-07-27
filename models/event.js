@@ -49,7 +49,7 @@ function EventSchema(customFields) {
       return Utils.getarr(it, 'rgAttachments', 'attachment').map((item) => {
         return {
           fileName: item.sFileName[0],
-          url: item.sURL[0].replace(/(amp)|(;)|(sTicket=)/g, '')
+          url: item.sURL[0].replace(/(amp)|(;)|(&sTicket=)/g, '')
         }
       }) || []
     }
