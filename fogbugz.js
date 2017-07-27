@@ -410,10 +410,7 @@
 				return Utils.getarr(d, 'people', 'person').map(person);
 			},
 			cases: function(d) {
-				console.log(d.cases[0]);
-				var a =  Utils.getarr(d, 'cases', 'case').map(new Case(customFields));
-				console.log(a);
-				return a;
+				return Utils.getarr(d, 'cases', 'case').map(new Case(customFields));
 			},
 
 			events: function(d) {
