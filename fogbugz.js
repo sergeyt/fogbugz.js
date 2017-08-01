@@ -100,7 +100,6 @@
 
   function getUrl(url) {
     log && console.log("GET %s", url);
-
     var d = defer();
 
     request(url, function(err, res, body) {
